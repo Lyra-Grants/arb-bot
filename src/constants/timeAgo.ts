@@ -1,0 +1,3 @@
+export const SECONDS_IN_YEAR = 31536000
+export const SECONDS_IN_MONTH = 2592000
+export const SECONDS_IN_DAY = 86400

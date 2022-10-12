@@ -1,0 +1,6 @@
+# folders
+dist/
+node_modules/
+src/index.ts
+src/types/global.d.ts
+.env
