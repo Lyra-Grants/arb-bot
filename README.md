@@ -3,15 +3,15 @@
 A bot providing automated arbs between Lyra & Deribit.
 
 - [x] Identify Arbs
-- [] Add Market Orders - execute first on Deribit then Lyra
-- [] Add Configs
-- [] Add revert mechanism (lyra price moves)
+- [ ] Add Market Orders - execute first on Deribit then Lyra
+- [ ] Add Configs
+- [ ] Add revert mechanism (lyra price moves)
 
 ### Configuration Requirements
 
-- [] Max Collateral
-- [] Min / Max Order Size
-- [] Partial Collateral %
+- [ ] Max Collateral
+- [ ] Min / Max Order Size
+- [ ] Partial Collateral %
 
 Run locally:
 
