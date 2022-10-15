@@ -31,6 +31,7 @@ export async function getMarket(market: Market) {
         term,
         expiration,
         provider: ProviderType.LYRA,
+        id: strike.id,
       }
 
       return {
@@ -59,8 +60,6 @@ export async function getMarket(market: Market) {
 export async function getLyraRates(marketName: string, lyra: Lyra): Promise<OptionsMap[]> {
   const market = await lyra.market(marketName)
   const rates = await getMarket(market)
-  if (marketName == 'sol') {
-    printObject(rates)
-  }
+
   return rates
 }

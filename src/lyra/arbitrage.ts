@@ -1,29 +1,32 @@
 import Lyra from '@lyrafinance/lyra-js'
-import { Deal, OptionType, ProviderType } from '../types/arbs'
+import { Deal, OptionType, ProviderType, Underlying } from '../types/arbs'
 import { useRatesData } from '../utils/arbUtils'
 import { maxBy, minBy } from 'lodash'
 import moment from 'moment'
 import { Arb, ArbDto } from '../types/lyra'
-import { EventType } from '../constants/eventType'
+import { ArbConfig } from '../types/arbConfig'
 
-const PROFIT_THRESHOLD = 0
-
-//eth //btc
-export async function GetArbitrageDeals(lyra: Lyra, market: string) {
+export function GetPrice(market: Underlying) {
   let price = ETH_PRICE
 
-  if (market == 'btc') {
+  if (market == Underlying.BTC) {
     price = BTC_PRICE
   }
-  if (market == 'sol') {
+  if (market == Underlying.SOL) {
     price = SOL_PRICE
   }
 
-  const deals = await useDeals(market, lyra)
+  return price
+}
+
+export async function GetArbitrageDeals(config: ArbConfig, lyra: Lyra, market: Underlying) {
+  const price = GetPrice(market)
+  const deals = await useDeals(config, lyra, market)
 
   const data = deals.map((deal) => {
     const momentExp = moment(deal?.expiration)
     const duration = moment.duration(momentExp.diff(moment())).asYears()
+
     const arb: Arb = {
       ...deal,
       apy: (deal.amount / price / duration) * 100,
@@ -36,18 +39,18 @@ export async function GetArbitrageDeals(lyra: Lyra, market: string) {
 
   const event: ArbDto = {
     arbs: data,
-    eventType: EventType.Arb,
     market: market,
-    isBtc: market == 'btc',
   }
 
   return event
 }
 
-export async function useDeals(marketName: string, lyra: Lyra) {
-  const { allRates } = await useRatesData(marketName, lyra)
+export async function useDeals(config: ArbConfig, lyra: Lyra, marketName: Underlying) {
+  const { allRates } = await useRatesData(lyra, marketName)
   const res: Deal[] = []
   const providers = [ProviderType.LYRA, ProviderType.DERIBIT]
+
+  console.log(allRates)
 
   Object.values(allRates).forEach((strike) =>
     Object.values(strike).forEach((interception) => {
@@ -60,15 +63,17 @@ export async function useDeals(marketName: string, lyra: Lyra) {
       const minCall = minBy(providerFiltered, 'CALL.askPrice')?.CALL
       const maxPut = maxBy(providerFiltered, 'PUT.bidPrice')?.PUT
       const minPut = minBy(providerFiltered, 'PUT.askPrice')?.PUT
+
       const callDeal =
         maxCall?.bidPrice &&
         minCall?.askPrice &&
         maxCall.provider !== minCall.provider &&
         maxCall.bidPrice - minCall.askPrice
+
       const putDeal =
         maxPut?.bidPrice && minPut?.askPrice && maxPut.provider !== minPut.provider && maxPut.bidPrice - minPut.askPrice
 
-      if (callDeal && callDeal > PROFIT_THRESHOLD) {
+      if (callDeal && callDeal > config.profitThreshold) {
         res.push({
           type: OptionType.CALL,
           term: maxCall.term,
@@ -79,7 +84,7 @@ export async function useDeals(marketName: string, lyra: Lyra) {
           sell: maxCall,
         })
       }
-      if (putDeal && putDeal > PROFIT_THRESHOLD) {
+      if (putDeal && putDeal > config.profitThreshold) {
         res.push({
           type: OptionType.PUT,
           term: maxPut.term,

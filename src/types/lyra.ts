@@ -1,10 +1,4 @@
-import { OptionType } from 'dayjs'
-import { EventType } from '../constants/eventType'
-import { Instrument } from './arbs'
-
-export type BaseEvent = {
-  eventType: EventType
-}
+import { Instrument, OptionType, Underlying } from './arbs'
 
 export type Arb = {
   apy: number
@@ -18,8 +12,18 @@ export type Arb = {
   sell: Instrument
 }
 
-export type ArbDto = BaseEvent & {
+export type ArbDto = {
   arbs: Arb[]
-  market: string
-  isBtc: boolean
+  market: Underlying
+}
+
+export type LyraTradeArgs = {
+  amount: number
+  market: Underlying
+  call: boolean
+  buy: boolean
+  strike: number
+  collat: number
+  base: boolean
+  stable: string
 }

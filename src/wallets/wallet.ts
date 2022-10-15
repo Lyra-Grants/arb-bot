@@ -8,7 +8,7 @@ export function Generate(): wallet {
   return { address: wallet.address, privateKey: key.privateKey, publicKey: key.publicKey }
 }
 
-export function TestWallet(): wallet {
+export function Wallet(): wallet {
   const wallet: wallet = {
     address: TEST_WALLET_ADDRESS,
     privateKey: TEST_PRIVATE_KEY,

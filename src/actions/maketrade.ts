@@ -1,72 +1,65 @@
-import Lyra, { Position, Trade, TradeEvent } from '@lyrafinance/lyra-js'
+import Lyra, { Trade, TradeEvent } from '@lyrafinance/lyra-js'
 import { ethers } from 'ethers'
-import { MAX_BN, ONE_BN } from '../constants/bn'
+import { UNIT } from '../constants/bn'
+import { TradeArgs } from '../types/lyra'
+import approve from '../utils/approve'
+import fromBigNumber from '../utils/fromBigNumber'
 import printObject from '../utils/printObject'
+import toBigNumber from '../utils/toBigNumber'
 
-export async function maketrade(lyraClient: Lyra, signer: ethers.Wallet) {
-  const account = lyraClient.account(signer.address)
+// Increase slippage for debugging
+const SLIPPAGE = 0.1 / 100
 
-  // market
-  const market = await lyraClient.market('eth')
-  console.log(market)
+export async function maketrade(lyra: Lyra, signer: ethers.Wallet, args: TradeArgs) {
+  const size = toBigNumber(args.amount)
+  const isCall = !!args.call
+  const isBuy = !!args.buy
+  const setToCollateral = args.collat ? toBigNumber(args.collat) : undefined
+  const strikeId = args.strike
+  const marketAddressOrName = args.market
+  const isBaseCollateral = args.base
+  const owner = signer.address
 
-  // most recent expiry
-  const board = market.liveBoards()[0]
-  console.log(board)
+  const market = await lyra.market(marketAddressOrName)
+  const option = market.liveOption(strikeId, isCall)
 
-  // strike
-  const strike = board.strikes().find((strike) => strike.isDeltaInRange)
-  if (!strike) {
-    console.log('No strike')
-    return
-  }
-
-  // Approve
-  const approveTx = await account.approveStableToken(market.quoteToken.address, MAX_BN)
-  const approveResponse = await signer.sendTransaction(approveTx)
-  await approveResponse.wait()
-  console.log('Approved sUSD')
-
-  // if (!balances.optionToken(market.address).isApprovedForAll) {
-  //   console.log('approving option token...')
-  //   const tx = await account.approveOptionToken(market.address, true)
-  //   if (!tx) {
-  //     throw new Error('Cannot approve option token')
-  //   }
-  //   const response = await signer.sendTransaction(tx)
-  //   await response.wait()
-  //   console.log('approved option token')
-  // }
-
-  //Check if has position open already
-  const position = (await Position.getByOwner(lyraClient, account.address)).find(
-    (position) => position.strikeId == strike.id && position.isCall,
+  console.log(
+    `${isBuy ? 'Buying' : 'Selling'} ${args.amount} ${market.name} ${isCall ? 'Calls' : 'Puts'} for $${fromBigNumber(
+      option.strike().strikePrice,
+    )} strike, ${option.board().expiryTimestamp} expiry`,
   )
 
-  // Prepare trade (Open 1.0 Long ETH Call)
-  const trade = await Trade.get(lyraClient, account.address, 'eth', strike.id, true, true, ONE_BN.div(100), {
-    premiumSlippage: 0.1 / 100, // 0.1%
-    //positionId: position?.id,
+  // Approve
+  await approve(lyra, signer, market, market.quoteToken.address)
+
+  // Prepare Trade
+  const trade = await Trade.get(lyra, owner, market.address, option.strike().id, option.isCall, isBuy, size, {
+    setToCollateral,
+    isBaseCollateral,
+    premiumSlippage: SLIPPAGE,
   })
 
   // Check if trade is disabled
-  if (!trade.tx) {
-    throw new Error(`Trade is disabled: ${trade.disabledReason}`)
+  if (trade.disabledReason) {
+    console.log('Disabled:', trade.disabledReason)
+    return
   }
 
-  console.log(trade.tx)
-
-  const tradeResponse = await signer.sendTransaction(trade.tx)
-  console.log('Executed trade:', tradeResponse.hash)
-  const tradeReceipt = await tradeResponse.wait()
+  const response = await signer.sendTransaction(trade.tx)
+  console.log('Executed trade:', response.hash)
+  const receipt = await response.wait()
+  console.log('tx', receipt.transactionHash)
+  const [tradeEvent] = await TradeEvent.getByHash(lyra, receipt.transactionHash)
 
   // Get trade result
-  const tradeEvent = (await TradeEvent.getByHash(lyraClient, tradeReceipt.transactionHash))[0]
-
-  printObject('Trade Result', {
+  printObject('Result', {
+    timestamp: tradeEvent.timestamp,
     blockNumber: tradeEvent.blockNumber,
     positionId: tradeEvent.positionId,
     premium: tradeEvent.premium,
     fee: tradeEvent.fee,
+    feeComponents: tradeEvent.feeComponents,
+    collateral: tradeEvent.collateralValue,
   })
+  console.log('Slippage', 100 * (fromBigNumber(trade.quoted.mul(UNIT).div(tradeEvent.premium)) - 1), '%')
 }

@@ -1,7 +1,9 @@
 import moment from 'moment'
 import { pick } from 'lodash'
-import { Instrument, OptionsMap, OptionType, ProviderType } from '../../types/arbs'
+import { Instrument, OptionsMap, OptionType, ProviderType, Underlying } from '../../types/arbs'
 import { RpcWebSocketClient } from 'rpc-websocket-client'
+import { GetPrice } from '../../lyra/arbitrage'
+import { deribitUrl } from '../../constants/api'
 
 // const authRequest = {
 //   jsonrpc: "2.0",
@@ -16,7 +18,7 @@ import { RpcWebSocketClient } from 'rpc-websocket-client'
 
 // DOCS: https://docs.deribit.com/?javascript#private-get_settlement_history_by_currency
 
-const ethOptions = {
+const options = {
   method: 'public/get_book_summary_by_currency',
   params: {
     currency: 'ETH',
@@ -24,21 +26,21 @@ const ethOptions = {
   },
 }
 
-const btcOptions = {
-  method: 'public/get_book_summary_by_currency',
-  params: {
-    currency: 'BTC',
-    kind: 'option',
-  },
-}
+// const btcOptions = {
+//   method: 'public/get_book_summary_by_currency',
+//   params: {
+//     currency: 'BTC',
+//     kind: 'option',
+//   },
+// }
 
-const solOptions = {
-  method: 'public/get_book_summary_by_currency',
-  params: {
-    currency: 'SOL',
-    kind: 'option',
-  },
-}
+// const solOptions = {
+//   method: 'public/get_book_summary_by_currency',
+//   params: {
+//     currency: 'SOL',
+//     kind: 'option',
+//   },
+// }
 
 //     @ response data
 //     ask_price: null,
@@ -99,19 +101,14 @@ const parseDeribitOption = (
   }
 }
 
-async function useDeribitData(market: string) {
+async function useDeribitData(market: Underlying) {
   let marketData: DeribitItem[] = []
   const rpc = new RpcWebSocketClient()
-  await rpc.connect(`wss://www.deribit.com/ws/api/v2`)
+  await rpc.connect(deribitUrl)
   console.log('Get Deribit Options: Connected!')
 
-  let config = ethOptions
-  if (market == 'btc') {
-    config = btcOptions
-  }
-  if (market == 'sol') {
-    config = solOptions
-  }
+  options.params.currency = market
+  const config = options
 
   await rpc
     .call(config.method, config.params)
@@ -126,16 +123,9 @@ async function useDeribitData(market: string) {
   return [marketData]
 }
 
-export async function getDeribitRates(market: string) {
+export async function getDeribitRates(market: Underlying) {
   const [data] = await useDeribitData(market)
-  let price = ETH_PRICE
-
-  if (market == 'btc') {
-    price = BTC_PRICE
-  }
-  if (market == 'sol') {
-    price = SOL_PRICE
-  }
+  const price = GetPrice(market)
 
   const optionsMap = data
     .filter(({ mid_price, ask_price, bid_price }) => ask_price && bid_price)
@@ -154,9 +144,9 @@ export async function getDeribitRates(market: string) {
 
       return acc
     }, [])
-  console.log('------------DERIBIT-------------')
-  console.log(optionsMap)
-  console.log('------------DERIBIT END-------------')
+  // console.log('------------DERIBIT-------------')
+  // console.log(optionsMap)
+  // console.log('------------DERIBIT END-------------')
 
   return optionsMap
 }
