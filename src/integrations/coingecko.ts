@@ -10,7 +10,7 @@ export async function GetPrice(): Promise<void> {
         include_24hr_change: true,
       })
       .then((resp) => {
-        printObject(resp.data)
+        //printObject(resp.data)
         global.ETH_PRICE = resp.data['ethereum'].usd
         global.ETH_24HR = resp.data['ethereum'].usd_24h_change
         global.BTC_PRICE = resp.data['bitcoin'].usd

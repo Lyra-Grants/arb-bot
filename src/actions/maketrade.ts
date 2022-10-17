@@ -1,7 +1,7 @@
 import Lyra, { Trade, TradeEvent } from '@lyrafinance/lyra-js'
 import { ethers } from 'ethers'
 import { UNIT } from '../constants/bn'
-import { TradeArgs } from '../types/lyra'
+import { LyraTradeArgs } from '../types/lyra'
 import approve from '../utils/approve'
 import fromBigNumber from '../utils/fromBigNumber'
 import printObject from '../utils/printObject'
@@ -10,10 +10,10 @@ import toBigNumber from '../utils/toBigNumber'
 // Increase slippage for debugging
 const SLIPPAGE = 0.1 / 100
 
-export async function maketrade(lyra: Lyra, signer: ethers.Wallet, args: TradeArgs) {
+export async function maketrade(lyra: Lyra, signer: ethers.Wallet, args: LyraTradeArgs) {
   const size = toBigNumber(args.amount)
-  const isCall = !!args.call
-  const isBuy = !!args.buy
+  const isCall = args.call
+  const isBuy = args.buy
   const setToCollateral = args.collat ? toBigNumber(args.collat) : undefined
   const strikeId = args.strike
   const marketAddressOrName = args.market
@@ -39,6 +39,10 @@ export async function maketrade(lyra: Lyra, signer: ethers.Wallet, args: TradeAr
     premiumSlippage: SLIPPAGE,
   })
 
+  //console.log('------------------ PREPARED TRADE START ------------------')
+  //printObject(trade)
+  //console.log('------------------ PREPARED TRADE END ------------------')
+
   // Check if trade is disabled
   if (trade.disabledReason) {
     console.log('Disabled:', trade.disabledReason)
@@ -49,17 +53,21 @@ export async function maketrade(lyra: Lyra, signer: ethers.Wallet, args: TradeAr
   console.log('Executed trade:', response.hash)
   const receipt = await response.wait()
   console.log('tx', receipt.transactionHash)
-  const [tradeEvent] = await TradeEvent.getByHash(lyra, receipt.transactionHash)
 
-  // Get trade result
-  printObject('Result', {
-    timestamp: tradeEvent.timestamp,
-    blockNumber: tradeEvent.blockNumber,
-    positionId: tradeEvent.positionId,
-    premium: tradeEvent.premium,
-    fee: tradeEvent.fee,
-    feeComponents: tradeEvent.feeComponents,
-    collateral: tradeEvent.collateralValue,
-  })
-  console.log('Slippage', 100 * (fromBigNumber(trade.quoted.mul(UNIT).div(tradeEvent.premium)) - 1), '%')
+  try {
+    const [tradeEvent] = await TradeEvent.getByHash(lyra, receipt.transactionHash)
+    // Get trade result
+    printObject('Result', {
+      timestamp: tradeEvent.timestamp,
+      blockNumber: tradeEvent.blockNumber,
+      positionId: tradeEvent.positionId,
+      premium: tradeEvent.premium,
+      fee: tradeEvent.fee,
+      feeComponents: tradeEvent.feeComponents,
+      collateral: tradeEvent.collateralValue,
+    })
+    console.log('Slippage', 100 * (fromBigNumber(trade.quoted.mul(UNIT).div(tradeEvent.premium)) - 1), '%')
+  } catch (ex) {
+    console.log(ex)
+  }
 }

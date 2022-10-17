@@ -50,7 +50,7 @@ export async function useDeals(config: ArbConfig, lyra: Lyra, marketName: Underl
   const res: Deal[] = []
   const providers = [ProviderType.LYRA, ProviderType.DERIBIT]
 
-  console.log(allRates)
+  //console.log(allRates)
 
   Object.values(allRates).forEach((strike) =>
     Object.values(strike).forEach((interception) => {

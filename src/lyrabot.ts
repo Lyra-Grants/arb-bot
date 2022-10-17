@@ -33,7 +33,7 @@ export async function initializeLyraBot() {
 
   await GetPrice()
   const arbs = await GetArbitrageDeals(config, lyra, Underlying.ETH)
-  printObject(arbs)
+  //printObject(arbs)
   //const arbBtc = await GetArbitrageDeals(lyra, 'btc')
   //printObject(arbBtc)
   //const arbSol = await GetArbitrageDeals(lyra, 'sol')
@@ -48,10 +48,10 @@ export async function initializeLyraBot() {
   }
 
   // BUY SIDE
-  // await trade(arb, Underlying.ETH, lyra, signer, true)
+  //await trade(arb, Underlying.ETH, lyra, signer, true)
 
   // // SELL SIDE
-  // await trade(arb, Underlying.ETH, lyra, signer, false)
+  await trade(arb, Underlying.ETH, lyra, signer, false)
 }
 
 export const getBalances = async (provider: Provider, signer: ethers.Wallet) => {
@@ -68,10 +68,12 @@ export const getBalances = async (provider: Provider, signer: ethers.Wallet) => 
 
 export async function trade(arb: Arb, market: Underlying, lyra: Lyra, signer: ethers.Wallet, isBuy = true) {
   let resp = ''
-  if (arb?.buy.provider === ProviderType.LYRA) {
+  const provider = isBuy ? arb?.buy.provider : arb.sell.provider
+
+  if (provider === ProviderType.LYRA) {
     await tradeLyra(arb, market, lyra, signer, isBuy)
     resp = 'lyra'
-  } else if (arb?.sell.provider === ProviderType.DERIBIT) {
+  } else if (provider === ProviderType.DERIBIT) {
     await tradeDeribit(arb, market, isBuy)
     resp = 'deribit'
   }
@@ -90,18 +92,23 @@ export function filterArbs(arbDto: ArbDto) {
 export async function tradeLyra(arb: Arb, market: Underlying, lyra: Lyra, signer: ethers.Wallet, isBuy = true) {
   // sell on Lyra
 
+  console.log(arb)
+
+  const amount = 0.001
+  const colat = 0.001
+
   const tradeArgs: LyraTradeArgs = {
-    amount: 0.01, // how to determine size?
+    amount: amount, // how to determine size?
     market: market,
     call: arb.type == OptionType.CALL,
     buy: isBuy,
     strike: isBuy ? arb.buy.id : arb.sell.id,
-    collat: 0,
+    collat: colat,
     base: true,
     stable: 'sUSD',
   }
 
-  maketrade(lyra, signer, tradeArgs)
+  await maketrade(lyra, signer, tradeArgs)
 }
 
 export async function tradeDeribit(arb: Arb, market: Underlying, isBuy = true) {
