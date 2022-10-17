@@ -1,8 +1,11 @@
+import { Provider } from '@ethersproject/providers'
 import Lyra from '@lyrafinance/lyra-js'
-import { ethers } from 'ethers'
+import { ethers, providers } from 'ethers'
+import { getBalance, getTokenBalance } from './actions/balance'
 import faucet from './actions/faucet'
 import { maketrade } from './actions/maketrade'
 import { optimismInfuraProvider } from './clients/ethersClient'
+import { Tokens } from './constants/token'
 import { GetPrice } from './integrations/coingecko'
 import { GetArbitrageDeals } from './lyra/arbitrage'
 import { ArbConfig } from './types/arbConfig'
@@ -19,6 +22,7 @@ export async function initializeLyraBot() {
   })
 
   const signer = new ethers.Wallet(Wallet().privateKey, lyra.provider)
+  await getBalances(lyra.provider, signer)
 
   // created a default config
   const config: ArbConfig = {
@@ -44,10 +48,22 @@ export async function initializeLyraBot() {
   }
 
   // BUY SIDE
-  await trade(arb, Underlying.ETH, lyra, signer, true)
+  // await trade(arb, Underlying.ETH, lyra, signer, true)
 
-  // SELL SIDE
-  await trade(arb, Underlying.ETH, lyra, signer, false)
+  // // SELL SIDE
+  // await trade(arb, Underlying.ETH, lyra, signer, false)
+}
+
+export const getBalances = async (provider: Provider, signer: ethers.Wallet) => {
+  console.log('Balances:')
+
+  const ethBalance = await getBalance(signer.address, provider)
+  console.log(`Eth: ${ethBalance}`)
+
+  Object.values(Tokens).map(async (value, index) => {
+    const bal = await getTokenBalance(value, provider, signer)
+    console.log(`${Object.keys(Tokens)[index]}: ${bal}`)
+  })
 }
 
 export async function trade(arb: Arb, market: Underlying, lyra: Lyra, signer: ethers.Wallet, isBuy = true) {
