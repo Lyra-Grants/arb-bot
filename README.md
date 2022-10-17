@@ -4,7 +4,9 @@ A bot providing automated arbs between Lyra & Deribit.
 
 - [x] Identify Arbs
 - [ ] Add Market Orders - execute first on Deribit then Lyra
-- [ ] Add Configs
+- [x] Execute trade - Lyra
+- [ ] Execute trade - Deribit
+- [ ] Add configs
 - [ ] Add revert mechanism (lyra price moves)
 
 ### Configuration Requirements
