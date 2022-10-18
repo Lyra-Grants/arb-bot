@@ -18,7 +18,7 @@ export type ArbDto = {
 }
 
 export type LyraTradeArgs = {
-  amount: number
+  size: number
   market: Underlying
   call: boolean
   buy: boolean

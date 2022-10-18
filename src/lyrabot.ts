@@ -7,9 +7,10 @@ import { optimismInfuraProvider } from './clients/ethersClient'
 import { TokenNames, Tokens } from './constants/token'
 import { GetPrice } from './integrations/coingecko'
 import { GetArbitrageDeals } from './lyra/arbitrage'
-import { ArbConfig } from './types/arbConfig'
+import { ArbConfig, ColatPercent } from './types/arbConfig'
 import { OptionType, ProviderType, Underlying } from './types/arbs'
 import { Arb, ArbDto, LyraTradeArgs } from './types/lyra'
+import getTradeCollateral from '@lyrafinance/lyra-js'
 import { TradeResult } from './types/trade'
 import printObject from './utils/printObject'
 import { Wallet } from './wallets/wallet'
@@ -29,6 +30,7 @@ export async function initializeLyraBot() {
     markets: [Underlying.ETH],
     optionTypes: [OptionType.CALL, OptionType.PUT],
     profitThreshold: 0,
+    colatPercent: ColatPercent.Fifty,
   }
 
   await GetPrice()
@@ -51,7 +53,7 @@ export async function initializeLyraBot() {
   //await trade(arb, Underlying.ETH, lyra, signer, true)
 
   // // SELL SIDE
-  await trade(arb, Underlying.ETH, lyra, signer, false)
+  await trade(arb, Underlying.ETH, lyra, signer, config, false)
 }
 
 export const getBalances = async (provider: Provider, signer: ethers.Wallet) => {
@@ -71,12 +73,13 @@ export async function trade(
   market: Underlying,
   lyra: Lyra,
   signer: ethers.Wallet,
+  config: ArbConfig,
   isBuy = true,
 ): Promise<TradeResult> {
   const provider = isBuy ? arb?.buy.provider : arb.sell.provider
 
   if (provider === ProviderType.LYRA) {
-    return await tradeLyra(arb, market, lyra, signer, isBuy)
+    return await tradeLyra(arb, market, lyra, signer, config, isBuy)
   } else {
     return await tradeDeribit(arb, market, isBuy)
   }
@@ -90,21 +93,38 @@ export function filterArbs(arbDto: ArbDto) {
   }
 }
 
-export async function tradeLyra(arb: Arb, market: Underlying, lyra: Lyra, signer: ethers.Wallet, isBuy = true) {
+export const calcColateral = (arb: Arb, size: number, colatPercent: ColatPercent, lyra: Lyra) => {
+  // get collat / ranges
+  // todo not working - comes out of range
+  // hits too much colateral
+
+  if (arb.type === OptionType.PUT) {
+    const cashColat = ((arb.strike * size) / 100) * colatPercent
+    console.log(`PUT collat: ${cashColat}`)
+    return cashColat
+  } else {
+    const baseColat = (size / 100) * colatPercent
+    console.log(`CALL collat: ${baseColat}`)
+    return baseColat
+  }
+}
+
+export const tradeLyra = async (
+  arb: Arb,
+  market: Underlying,
+  lyra: Lyra,
+  signer: ethers.Wallet,
+  config: ArbConfig,
+  isBuy = true,
+) => {
   // sell on Lyra
-
   console.log(arb)
+  const size = 0.001
 
-  const amount = 0.001
-
-  // todo COLAT is different for CALL / PUTS
-  // PUTS -> based on STRIKE x Size = 100% colat
-  // CALLS -> covered call amount of base
-
-  const colat = 0.001
+  const colat = calcColateral(arb, size, config.colatPercent, lyra)
 
   const tradeArgs: LyraTradeArgs = {
-    amount: amount, // how to determine size?
+    size: size,
     market: market,
     call: arb.type == OptionType.CALL,
     buy: isBuy,
@@ -120,7 +140,6 @@ export async function tradeLyra(arb: Arb, market: Underlying, lyra: Lyra, signer
 
 export async function tradeDeribit(arb: Arb, market: Underlying, isBuy = true) {
   //todo implement trade
-  // sell on Lyra
 
   console.log(arb)
 

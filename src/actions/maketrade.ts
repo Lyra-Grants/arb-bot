@@ -1,4 +1,4 @@
-import Lyra, { Trade, TradeEvent } from '@lyrafinance/lyra-js'
+import Lyra, { Market, Option, Trade, TradeDisabledReason, TradeEvent } from '@lyrafinance/lyra-js'
 import { ethers } from 'ethers'
 import { UNIT } from '../constants/bn'
 import { ProviderType } from '../types/arbs'
@@ -22,7 +22,7 @@ const defaultResult = (provider: ProviderType): TradeResult => {
 }
 
 export const makeTradeLyra = async (lyra: Lyra, signer: ethers.Wallet, args: LyraTradeArgs): Promise<TradeResult> => {
-  const size = toBigNumber(args.amount)
+  const size = toBigNumber(args.size)
   const isCall = args.call
   const isBuy = args.buy
   const setToCollateral = args.collat ? toBigNumber(args.collat) : undefined
@@ -34,9 +34,10 @@ export const makeTradeLyra = async (lyra: Lyra, signer: ethers.Wallet, args: Lyr
   const market = await lyra.market(marketAddressOrName)
   const option = market.liveOption(strikeId, isCall)
   const result = defaultResult(ProviderType.LYRA)
+  const trys = 3
 
   console.log(
-    `${isBuy ? 'Buying' : 'Selling'} ${args.amount} ${market.name} ${isCall ? 'Calls' : 'Puts'} for $${fromBigNumber(
+    `${isBuy ? 'Buying' : 'Selling'} ${args.size} ${market.name} ${isCall ? 'Calls' : 'Puts'} for $${fromBigNumber(
       option.strike().strikePrice,
     )} strike, ${option.board().expiryTimestamp} expiry`,
   )
@@ -44,12 +45,48 @@ export const makeTradeLyra = async (lyra: Lyra, signer: ethers.Wallet, args: Lyr
   // Approve
   await approve(lyra, signer, market, market.quoteToken.address)
 
-  // Prepare Trade
-  const trade = await Trade.get(lyra, owner, market.address, option.strike().id, option.isCall, isBuy, size, {
-    setToCollateral,
-    isBaseCollateral,
-    premiumSlippage: SLIPPAGE,
-  })
+  // first stab
+  let trade = await prepareTrade(lyra, owner, market, option, isBuy, size, setToCollateral, isBaseCollateral)
+
+  if (trade.isDisabled) {
+    // set collat to the minimum
+    if (trade.disabledReason === TradeDisabledReason.NotEnoughCollateral) {
+      console.log(
+        `Retrying Trade with min collateral, new collat: ${fromBigNumber(
+          trade?.collateral?.min as unknown as ethers.BigNumber,
+        )}`,
+      )
+      trade = await prepareTrade(
+        lyra,
+        owner,
+        market,
+        option,
+        isBuy,
+        size,
+        trade?.collateral?.min as unknown as ethers.BigNumber,
+        isBaseCollateral,
+      )
+    } else if (trade.disabledReason === TradeDisabledReason.TooMuchCollateral) {
+      console.log(
+        `Retrying Trade with max collateral, new collat: ${fromBigNumber(
+          trade?.collateral?.max as unknown as ethers.BigNumber,
+        )}`,
+      )
+      trade = await prepareTrade(
+        lyra,
+        owner,
+        market,
+        option,
+        isBuy,
+        size,
+        trade?.collateral?.max as unknown as ethers.BigNumber,
+        isBaseCollateral,
+      )
+    } else {
+      result.failReason = trade.disabledReason as string
+      return result
+    }
+  }
 
   //console.log('------------------ PREPARED TRADE START ------------------')
   //printObject(trade)
@@ -58,8 +95,7 @@ export const makeTradeLyra = async (lyra: Lyra, signer: ethers.Wallet, args: Lyr
   // Check if trade is disabled
   if (trade.disabledReason) {
     console.log('Disabled:', trade.disabledReason)
-    result.isSuccess = false
-    result.failReason = 'Disabled'
+    result.failReason = trade.disabledReason as string
     return result
   }
 
@@ -89,6 +125,26 @@ export const makeTradeLyra = async (lyra: Lyra, signer: ethers.Wallet, args: Lyr
   }
 
   return result
+}
+
+export const prepareTrade = async (
+  lyra: Lyra,
+  owner: string,
+  market: Market,
+  option: Option,
+  isBuy: boolean,
+  size: ethers.BigNumber,
+  setToCollateral: ethers.BigNumber | undefined,
+  isBaseCollateral: boolean,
+) => {
+  // Prepare Trade
+  const trade = await Trade.get(lyra, owner, market.address, option.strike().id, option.isCall, isBuy, size, {
+    setToCollateral,
+    isBaseCollateral,
+    premiumSlippage: SLIPPAGE,
+  })
+
+  return trade
 }
 
 export const makeTradeDeribit = async (): Promise<TradeResult> => {
