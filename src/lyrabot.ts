@@ -1,16 +1,16 @@
 import { Provider } from '@ethersproject/providers'
 import Lyra from '@lyrafinance/lyra-js'
-import { ethers, providers } from 'ethers'
+import { ethers } from 'ethers'
 import { getBalance, getTokenBalance } from './actions/balance'
-import faucet from './actions/faucet'
-import { maketrade } from './actions/maketrade'
+import { makeTradeDeribit, makeTradeLyra } from './actions/maketrade'
 import { optimismInfuraProvider } from './clients/ethersClient'
-import { Tokens } from './constants/token'
+import { TokenNames, Tokens } from './constants/token'
 import { GetPrice } from './integrations/coingecko'
 import { GetArbitrageDeals } from './lyra/arbitrage'
 import { ArbConfig } from './types/arbConfig'
 import { OptionType, ProviderType, Underlying } from './types/arbs'
 import { Arb, ArbDto, LyraTradeArgs } from './types/lyra'
+import { TradeResult } from './types/trade'
 import printObject from './utils/printObject'
 import { Wallet } from './wallets/wallet'
 
@@ -66,26 +66,27 @@ export const getBalances = async (provider: Provider, signer: ethers.Wallet) => 
   })
 }
 
-export async function trade(arb: Arb, market: Underlying, lyra: Lyra, signer: ethers.Wallet, isBuy = true) {
-  let resp = ''
+export async function trade(
+  arb: Arb,
+  market: Underlying,
+  lyra: Lyra,
+  signer: ethers.Wallet,
+  isBuy = true,
+): Promise<TradeResult> {
   const provider = isBuy ? arb?.buy.provider : arb.sell.provider
 
   if (provider === ProviderType.LYRA) {
-    await tradeLyra(arb, market, lyra, signer, isBuy)
-    resp = 'lyra'
-  } else if (provider === ProviderType.DERIBIT) {
-    await tradeDeribit(arb, market, isBuy)
-    resp = 'deribit'
+    return await tradeLyra(arb, market, lyra, signer, isBuy)
+  } else {
+    return await tradeDeribit(arb, market, isBuy)
   }
-  // todo create response object, deal with different scenarios, fail, success etc..
-  return resp
 }
 
 export function filterArbs(arbDto: ArbDto) {
   // todo use config to filter the arbs
   // for now just get first one
   if (arbDto.arbs.length > 0) {
-    return arbDto.arbs[0]
+    return arbDto.arbs.filter((x) => x.type === OptionType.CALL)[0]
   }
 }
 
@@ -95,6 +96,11 @@ export async function tradeLyra(arb: Arb, market: Underlying, lyra: Lyra, signer
   console.log(arb)
 
   const amount = 0.001
+
+  // todo COLAT is different for CALL / PUTS
+  // PUTS -> based on STRIKE x Size = 100% colat
+  // CALLS -> covered call amount of base
+
   const colat = 0.001
 
   const tradeArgs: LyraTradeArgs = {
@@ -105,12 +111,22 @@ export async function tradeLyra(arb: Arb, market: Underlying, lyra: Lyra, signer
     strike: isBuy ? arb.buy.id : arb.sell.id,
     collat: colat,
     base: true,
-    stable: 'sUSD',
+    stable: TokenNames.sUSD,
   }
 
-  await maketrade(lyra, signer, tradeArgs)
+  const result = await makeTradeLyra(lyra, signer, tradeArgs)
+  return result
 }
 
 export async function tradeDeribit(arb: Arb, market: Underlying, isBuy = true) {
   //todo implement trade
+  // sell on Lyra
+
+  console.log(arb)
+
+  const amount = 0.001
+  const colat = 0.001
+
+  const result = await makeTradeDeribit()
+  return result
 }

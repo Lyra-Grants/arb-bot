@@ -8,6 +8,13 @@ export enum Tokens {
   USDC = '0x7f5c764cbc14f9669b88837ca1490cca17c31607',
 }
 
+export enum TokenNames {
+  sUSD = 'sUSD',
+  sETH = 'sETH',
+  sSOL = 'sSOL',
+  sBTC = 'sBTC',
+  USDC = 'USDC',
+}
 export const TOKENS: { [key: string]: (string | number)[] } = {
   '0x3c8b650257cfb5f272f799f5e2b4e65093a11a05': ['velodrome-finance', 'VELO', 18, '25783/small/velo.png'],
   '0x7f5c764cbc14f9669b88837ca1490cca17c31607': ['usd-coin', 'USDC', 6, '6319/small/USD_Coin_icon.png'],
