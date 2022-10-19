@@ -32,9 +32,17 @@ yarn start
 
 #### Deribit
 
-- ``
-- ``
-- ``
+- `DERIBIT_CLIENT_ID` - deribit client id
+- `DERIBIT_CLIENT_SECRET` - deribit client secret
+- `DERIBIT_TESTNET` - true/false use the testnet endpoint
+- `DERIBIT_TESTNET_CLIENT_ID` - deribit TESTNET client id
+- `DERIBIT_TESTNET_CLIENT_SECRET` - deribit TESTNET client secret
+
+#### Ether Wallet
+
+- `WALLET_ADDRESS` - your wallet address
+- `PRIVATE_KEY` - wallet private key
+- `PUBLIC_KEY` - wallet public key
 
 ### Resources
 

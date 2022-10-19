@@ -3,7 +3,8 @@ import { pick } from 'lodash'
 import { Instrument, OptionsMap, OptionType, ProviderType, Underlying } from '../../types/arbs'
 import { RpcWebSocketClient } from 'rpc-websocket-client'
 import { GetPrice } from '../../lyra/arbitrage'
-import { deribitUrl } from '../../constants/api'
+import { deribitUrl, deribitUrlTestnet } from '../../constants/api'
+import { DERIBIT_TESTNET } from '../../secrets'
 
 // const authRequest = {
 //   jsonrpc: "2.0",
@@ -105,7 +106,7 @@ const parseDeribitOption = (
 async function useDeribitData(market: Underlying) {
   let marketData: DeribitItem[] = []
   const rpc = new RpcWebSocketClient()
-  await rpc.connect(deribitUrl)
+  await rpc.connect(getDeribitUrl())
   console.log('Get Deribit Options: Connected!')
 
   options.params.currency = market
@@ -151,4 +152,11 @@ export async function getDeribitRates(market: Underlying) {
   // console.log('------------DERIBIT END-------------')
 
   return optionsMap
+}
+
+export function getDeribitUrl() {
+  if (DERIBIT_TESTNET) {
+    return deribitUrlTestnet
+  }
+  return deribitUrl
 }
