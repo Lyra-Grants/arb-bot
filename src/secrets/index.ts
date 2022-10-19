@@ -9,6 +9,9 @@ export const INFURA_ID_OPTIMISM = _.defaultTo(process.env.INFURA_ID_OPTIMISM, ''
 export const TESTNET: boolean = _.defaultTo(convertToBoolean(process.env.TESTNET as string), true) as boolean
 export const ENTROPY = _.defaultTo(process.env.ENTROPY, '')
 
-export const TEST_WALLET_ADDRESS = _.defaultTo(process.env.TEST_WALLET_ADDRESS, '')
-export const TEST_PRIVATE_KEY = _.defaultTo(process.env.TEST_PRIVATE_KEY, '')
-export const TEST_PUBLIC_KEY = _.defaultTo(process.env.TEST_PUBLIC_KEY, '')
+export const WALLET_ADDRESS = _.defaultTo(process.env.WALLET_ADDRESS, '')
+export const PRIVATE_KEY = _.defaultTo(process.env.PRIVATE_KEY, '')
+export const PUBLIC_KEY = _.defaultTo(process.env.PUBLIC_KEY, '')
+
+export const DERIBIT_CLIENT_ID = _.defaultTo(process.env.DERIBIT_CLIENT_ID, '')
+export const DERIBIT_CLIENT_SECRET = _.defaultTo(process.env.DERIBIT_CLIENT_SECRET, '')

@@ -12,7 +12,7 @@ import toBigNumber from '../utils/toBigNumber'
 // Increase slippage for debugging
 const SLIPPAGE = 0.1 / 100
 
-const defaultResult = (provider: ProviderType): TradeResult => {
+export const defaultResult = (provider: ProviderType): TradeResult => {
   return {
     isSuccess: false,
     pricePerOption: 0,

@@ -1,6 +1,6 @@
 import { ethers } from 'ethers'
 import { wallet } from '../types/wallet'
-import { ENTROPY, TEST_PRIVATE_KEY, TEST_PUBLIC_KEY, TEST_WALLET_ADDRESS } from '../secrets'
+import { ENTROPY, PRIVATE_KEY, PUBLIC_KEY, WALLET_ADDRESS } from '../secrets'
 
 export function Generate(): wallet {
   const wallet = ethers.Wallet.createRandom({ extraEntropy: '' })
@@ -10,9 +10,9 @@ export function Generate(): wallet {
 
 export function Wallet(): wallet {
   const wallet: wallet = {
-    address: TEST_WALLET_ADDRESS,
-    privateKey: TEST_PRIVATE_KEY,
-    publicKey: TEST_PUBLIC_KEY,
+    address: WALLET_ADDRESS,
+    privateKey: PRIVATE_KEY,
+    publicKey: PUBLIC_KEY,
   }
   return wallet
 }

@@ -14,6 +14,7 @@ import getTradeCollateral from '@lyrafinance/lyra-js'
 import { TradeResult } from './types/trade'
 import printObject from './utils/printObject'
 import { Wallet } from './wallets/wallet'
+import { authenticateDeribit } from './actions/maketradeDeribit'
 
 export async function initializeLyraBot() {
   const lyra = new Lyra({
@@ -50,10 +51,10 @@ export async function initializeLyraBot() {
   }
 
   // BUY SIDE
-  //await trade(arb, Underlying.ETH, lyra, signer, true)
+  await trade(arb, Underlying.ETH, lyra, signer, config, true)
 
   // // SELL SIDE
-  await trade(arb, Underlying.ETH, lyra, signer, config, false)
+  //await trade(arb, Underlying.ETH, lyra, signer, config, false)
 }
 
 export const getBalances = async (provider: Provider, signer: ethers.Wallet) => {
@@ -79,7 +80,13 @@ export async function trade(
   const provider = isBuy ? arb?.buy.provider : arb.sell.provider
 
   if (provider === ProviderType.LYRA) {
-    return await tradeLyra(arb, market, lyra, signer, config, isBuy)
+    return {
+      isSuccess: false,
+      pricePerOption: 0,
+      failReason: '',
+      provider: provider,
+    }
+    //return await tradeLyra(arb, market, lyra, signer, config, isBuy)
   } else {
     return await tradeDeribit(arb, market, isBuy)
   }
@@ -140,6 +147,8 @@ export const tradeLyra = async (
 
 export async function tradeDeribit(arb: Arb, market: Underlying, isBuy = true) {
   //todo implement trade
+
+  await authenticateDeribit(market)
 
   console.log(arb)
 
