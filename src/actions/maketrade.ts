@@ -34,7 +34,6 @@ export const makeTradeLyra = async (lyra: Lyra, signer: ethers.Wallet, args: Lyr
   const market = await lyra.market(marketAddressOrName)
   const option = market.liveOption(strikeId, isCall)
   const result = defaultResult(ProviderType.LYRA)
-  const trys = 3
 
   console.log(
     `${isBuy ? 'Buying' : 'Selling'} ${args.size} ${market.name} ${isCall ? 'Calls' : 'Puts'} for $${fromBigNumber(
@@ -145,12 +144,4 @@ export const prepareTrade = async (
   })
 
   return trade
-}
-
-export const makeTradeDeribit = async (): Promise<TradeResult> => {
-  const result = defaultResult(ProviderType.DERIBIT)
-
-  // todo -> implement DERIBIT BUY
-
-  return result
 }

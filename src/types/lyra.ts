@@ -27,3 +27,9 @@ export type LyraTradeArgs = {
   base: boolean
   stable: string
 }
+
+export type DeribitTradeArgs = {
+  amount: number
+  instrumentName: string
+  buy: boolean
+}

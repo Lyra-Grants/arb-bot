@@ -25,7 +25,7 @@ export type InstrumentMeta = {
   expiration: number
   term: string
   strike: number
-  id: number
+  id: number | string
 }
 
 export type Instrument = {

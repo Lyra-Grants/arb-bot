@@ -99,7 +99,7 @@ const parseDeribitOption = (
     askPrice: (ask_price ?? 0) * ethPrice,
     midPrice: (mid_price ?? 0) * ethPrice,
     bidPrice: (bid_price ?? 0) * ethPrice,
-    id: 0,
+    id: instrument_name,
   }
 }
 
@@ -139,9 +139,8 @@ export async function getDeribitRates(market: Underlying) {
         found[option.type] = option as any
       } else {
         acc.push({
-          ...pick(option, ['term', 'strike', 'expiration', 'provider']),
+          ...pick(option, ['term', 'strike', 'expiration', 'provider', 'id']),
           [option.type]: option,
-          id: 0,
         })
       }
 

@@ -2,19 +2,18 @@ import { Provider } from '@ethersproject/providers'
 import Lyra from '@lyrafinance/lyra-js'
 import { ethers } from 'ethers'
 import { getBalance, getTokenBalance } from './actions/balance'
-import { makeTradeDeribit, makeTradeLyra } from './actions/maketrade'
+import { makeTradeLyra } from './actions/maketrade'
 import { optimismInfuraProvider } from './clients/ethersClient'
 import { TokenNames, Tokens } from './constants/token'
 import { GetPrice } from './integrations/coingecko'
 import { GetArbitrageDeals } from './lyra/arbitrage'
 import { ArbConfig, ColatPercent } from './types/arbConfig'
 import { OptionType, ProviderType, Underlying } from './types/arbs'
-import { Arb, ArbDto, LyraTradeArgs } from './types/lyra'
-import getTradeCollateral from '@lyrafinance/lyra-js'
+import { Arb, ArbDto, DeribitTradeArgs, LyraTradeArgs } from './types/lyra'
 import { TradeResult } from './types/trade'
 import printObject from './utils/printObject'
 import { Wallet } from './wallets/wallet'
-import { authenticateDeribit } from './actions/maketradeDeribit'
+import { makeTradeDeribit } from './actions/maketradeDeribit'
 
 export async function initializeLyraBot() {
   const lyra = new Lyra({
@@ -53,8 +52,8 @@ export async function initializeLyraBot() {
   // BUY SIDE
   await trade(arb, Underlying.ETH, lyra, signer, config, true)
 
-  // // SELL SIDE
-  //await trade(arb, Underlying.ETH, lyra, signer, config, false)
+  // SELL SIDE
+  await trade(arb, Underlying.ETH, lyra, signer, config, false)
 }
 
 export const getBalances = async (provider: Provider, signer: ethers.Wallet) => {
@@ -80,15 +79,15 @@ export async function trade(
   const provider = isBuy ? arb?.buy.provider : arb.sell.provider
 
   if (provider === ProviderType.LYRA) {
-    return {
-      isSuccess: false,
-      pricePerOption: 0,
-      failReason: '',
-      provider: provider,
-    }
-    //return await tradeLyra(arb, market, lyra, signer, config, isBuy)
+    // return {
+    //   isSuccess: false,
+    //   pricePerOption: 0,
+    //   failReason: '',
+    //   provider: provider,
+    // }
+    return await tradeLyra(arb, market, lyra, signer, config, isBuy)
   } else {
-    return await tradeDeribit(arb, market, isBuy)
+    return await tradeDeribit(arb, isBuy)
   }
 }
 
@@ -135,7 +134,7 @@ export const tradeLyra = async (
     market: market,
     call: arb.type == OptionType.CALL,
     buy: isBuy,
-    strike: isBuy ? arb.buy.id : arb.sell.id,
+    strike: isBuy ? (arb.buy.id as number) : (arb.sell.id as number),
     collat: colat,
     base: true,
     stable: TokenNames.sUSD,
@@ -145,16 +144,16 @@ export const tradeLyra = async (
   return result
 }
 
-export async function tradeDeribit(arb: Arb, market: Underlying, isBuy = true) {
-  //todo implement trade
-
-  await authenticateDeribit(market)
-
+export async function tradeDeribit(arb: Arb, isBuy = true) {
+  const amount = 1 // eth minimum 1 contract
   console.log(arb)
 
-  const amount = 0.001
-  const colat = 0.001
+  const args: DeribitTradeArgs = {
+    amount: amount,
+    instrumentName: isBuy ? (arb.buy.id as string) : (arb.sell.id as string),
+    buy: isBuy,
+  }
 
-  const result = await makeTradeDeribit()
+  const result = await makeTradeDeribit(args)
   return result
 }

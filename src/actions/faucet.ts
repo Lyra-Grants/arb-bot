@@ -1,7 +1,6 @@
 import Lyra from '@lyrafinance/lyra-js'
 import { ethers } from 'ethers'
 import fromBigNumber from '../utils/fromBigNumber'
-import { TestWallet } from '../wallets/wallet'
 
 export default async function faucet(lyra: Lyra, signer: ethers.Wallet) {
   const preAccount = lyra.account(signer.address)
