@@ -6,14 +6,21 @@ A bot providing automated arbs between Lyra & Deribit.
 - [x] Add Market Orders - execute first on Deribit then Lyra
 - [x] Execute trade - Lyra
 - [x] Execute trade - Deribit
-- [ ] Add configs
-- [ ] Add revert mechanism (lyra price moves)
+- [ ] Add configs / strategy mechanism
+- [ ] Add revert mechanism (price moves, arb invalidated)
+- [ ] Trade / logging - reporting - Telegram bot to report trades?
+- [ ] Polling mechanism - websocket or js call
+- [ ] Documentation
 
-### Configuration Requirements
+### Configuration / Stragegy Requirements
 
+- [ ] Markets ETH / BTC / SOL
 - [ ] Max Collateral
 - [ ] Min / Max Order Size
 - [ ] Partial Collateral %
+- [ ] Buy / Sell First
+- [ ] Polling Interval
+- [ ] Read Json Strategy files - execute accord to strategies
 
 Run locally:
 
