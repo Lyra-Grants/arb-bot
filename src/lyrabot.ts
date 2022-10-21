@@ -31,6 +31,7 @@ export async function initializeLyraBot() {
     optionTypes: [OptionType.CALL, OptionType.PUT],
     profitThreshold: 0,
     colatPercent: ColatPercent.Fifty,
+    defaultTradeSize: 1,
   }
 
   await GetPrice()
@@ -49,11 +50,33 @@ export async function initializeLyraBot() {
     return
   }
 
-  // BUY SIDE
-  await trade(arb, Underlying.ETH, lyra, signer, config, true)
+  console.log(arb)
 
-  // SELL SIDE
-  await trade(arb, Underlying.ETH, lyra, signer, config, false)
+  // BUY SIDE
+  const buyResult = await trade(arb, Underlying.ETH, lyra, signer, config, true)
+  if (!buyResult.isSuccess) {
+    console.log(`Buy failed: ${buyResult.failReason}`)
+    return
+  }
+
+  // // SELL SIDE
+  const sellResult = await trade(arb, Underlying.ETH, lyra, signer, config, false)
+  if (!sellResult.isSuccess) {
+    console.log(`Sell failed: ${sellResult.failReason}`)
+    return
+  }
+
+  console.log('ARB SUCCESS')
+}
+
+export const getSize = (config: ArbConfig) => {
+  // number of contracts to purchase
+  // todo more complex rules around sizing
+  // eg. check depth of orderbook on deribit
+  // check slippage on Lyra
+  // at moment just return default from config
+
+  return config.defaultTradeSize
 }
 
 export const getBalances = async (provider: Provider, signer: ethers.Wallet) => {
@@ -68,6 +91,13 @@ export const getBalances = async (provider: Provider, signer: ethers.Wallet) => 
   })
 }
 
+// return {
+//   isSuccess: false,
+//   pricePerOption: 0,
+//   failReason: '',
+//   provider: provider,
+// }
+
 export async function trade(
   arb: Arb,
   market: Underlying,
@@ -77,17 +107,12 @@ export async function trade(
   isBuy = true,
 ): Promise<TradeResult> {
   const provider = isBuy ? arb?.buy.provider : arb.sell.provider
+  const size = getSize(config)
 
   if (provider === ProviderType.LYRA) {
-    // return {
-    //   isSuccess: false,
-    //   pricePerOption: 0,
-    //   failReason: '',
-    //   provider: provider,
-    // }
-    return await tradeLyra(arb, market, lyra, signer, config, isBuy)
+    return await tradeLyra(arb, market, lyra, signer, config, size, isBuy)
   } else {
-    return await tradeDeribit(arb, isBuy)
+    return await tradeDeribit(arb, size, isBuy)
   }
 }
 
@@ -95,14 +120,21 @@ export function filterArbs(arbDto: ArbDto) {
   // todo use config to filter the arbs
   // for now just get first one
   if (arbDto.arbs.length > 0) {
-    return arbDto.arbs.filter((x) => x.type === OptionType.CALL)[0]
+    //arbDto.arbs.filter((x) => x.type === OptionType.CALL)
+
+    return arbDto.arbs[0]
   }
 }
 
-export const calcColateral = (arb: Arb, size: number, colatPercent: ColatPercent, lyra: Lyra) => {
+export const calcColateral = (arb: Arb, size: number, colatPercent: ColatPercent, isBuy: boolean, lyra: Lyra) => {
   // get collat / ranges
   // todo not working - comes out of range
   // hits too much colateral
+
+  // Collat only required for sells
+  if (isBuy) {
+    return 0
+  }
 
   if (arb.type === OptionType.PUT) {
     const cashColat = ((arb.strike * size) / 100) * colatPercent
@@ -121,14 +153,10 @@ export const tradeLyra = async (
   lyra: Lyra,
   signer: ethers.Wallet,
   config: ArbConfig,
+  size: number,
   isBuy = true,
 ) => {
-  // sell on Lyra
-  console.log(arb)
-  const size = 0.001
-
-  const colat = calcColateral(arb, size, config.colatPercent, lyra)
-
+  const colat = calcColateral(arb, size, config.colatPercent, isBuy, lyra)
   const tradeArgs: LyraTradeArgs = {
     size: size,
     market: market,
@@ -144,12 +172,9 @@ export const tradeLyra = async (
   return result
 }
 
-export async function tradeDeribit(arb: Arb, isBuy = true) {
-  const amount = 1 // eth minimum 1 contract
-  console.log(arb)
-
+export async function tradeDeribit(arb: Arb, size: number, isBuy = true) {
   const args: DeribitTradeArgs = {
-    amount: amount,
+    amount: size,
     instrumentName: isBuy ? (arb.buy.id as string) : (arb.sell.id as string),
     buy: isBuy,
   }

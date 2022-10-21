@@ -5,6 +5,7 @@ export type ArbConfig = {
   optionTypes: OptionType[]
   profitThreshold: number
   colatPercent: ColatPercent
+  defaultTradeSize: number
 }
 
 export enum ColatPercent {
