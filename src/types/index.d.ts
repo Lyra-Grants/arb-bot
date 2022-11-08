@@ -7,6 +7,7 @@ declare global {
   var BTC_24HR: number
   var SOL_PRICE: number
   var SOL_24HR: number
+  var REPORT_ONLY: boolean
 }
 
 declare module '*.json' {

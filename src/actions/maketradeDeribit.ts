@@ -55,7 +55,7 @@ export async function authenticateAndTradeDeribit(args: DeribitTradeArgs) {
     .catch((err) => {
       console.log(err)
     })
-    .finally(rpc.ws.close())
+    .finally(() => rpc.ws.close())
 }
 
 export const makeTradeDeribit = async (args: DeribitTradeArgs): Promise<TradeResult> => {

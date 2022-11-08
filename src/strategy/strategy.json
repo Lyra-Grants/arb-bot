@@ -1,0 +1,17 @@
+{
+  "reportOnly": true,
+  "pollingInterval": 100,
+  "strategy": [
+    {
+      "market": "SOL",
+      "optionTypes": ["CALL", "PUT"],
+      "maxCollat": 1,
+      "defaultTradeSize": 1,
+      "minTradeSize": 1,
+      "maxTradeSize": 1,
+      "colatPercent": 80,
+      "isBuyFirst": true,
+      "profitThreshold": 3
+    }
+  ]
+}

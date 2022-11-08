@@ -28,6 +28,7 @@
     "node-schedule": "^2.1.0",
     "react": "^18.2.0",
     "rpc-websocket-client": "^1.1.4",
+    "telegraf": "^4.10.0",
     "ts-node": "^10.9.1"
   },
   "devDependencies": {

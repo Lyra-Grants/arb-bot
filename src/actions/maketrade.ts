@@ -6,6 +6,8 @@ import { LyraTradeArgs } from '../types/lyra'
 import { TradeResult } from '../types/trade'
 import approve from '../utils/approve'
 import fromBigNumber from '../utils/fromBigNumber'
+import getLyra from '../utils/getLyra'
+import getSigner from '../utils/getSigner'
 import printObject from '../utils/printObject'
 import toBigNumber from '../utils/toBigNumber'
 
@@ -21,7 +23,10 @@ export const defaultResult = (provider: ProviderType): TradeResult => {
   }
 }
 
-export const makeTradeLyra = async (lyra: Lyra, signer: ethers.Wallet, args: LyraTradeArgs): Promise<TradeResult> => {
+export const makeTradeLyra = async (args: LyraTradeArgs): Promise<TradeResult> => {
+  const lyra = getLyra()
+  const signer = getSigner()
+
   const size = toBigNumber(args.size)
   const isCall = args.call
   const isBuy = args.buy

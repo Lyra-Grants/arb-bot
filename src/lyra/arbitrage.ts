@@ -4,7 +4,7 @@ import { useRatesData } from '../utils/arbUtils'
 import { maxBy, minBy } from 'lodash'
 import moment from 'moment'
 import { Arb, ArbDto } from '../types/lyra'
-import { ArbConfig } from '../types/arbConfig'
+import { Strategy } from '../types/arbConfig'
 
 export function GetPrice(market: Underlying) {
   let price = ETH_PRICE
@@ -19,9 +19,9 @@ export function GetPrice(market: Underlying) {
   return price
 }
 
-export async function GetArbitrageDeals(config: ArbConfig, lyra: Lyra, market: Underlying) {
-  const price = GetPrice(market)
-  const deals = await useDeals(config, lyra, market)
+export async function GetArbitrageDeals(strategy: Strategy) {
+  const price = GetPrice(strategy.market)
+  const deals = await useDeals(strategy)
 
   const data = deals.map((deal) => {
     const momentExp = moment(deal?.expiration)
@@ -39,14 +39,14 @@ export async function GetArbitrageDeals(config: ArbConfig, lyra: Lyra, market: U
 
   const event: ArbDto = {
     arbs: data,
-    market: market,
+    market: strategy.market,
   }
 
   return event
 }
 
-export async function useDeals(config: ArbConfig, lyra: Lyra, marketName: Underlying) {
-  const { allRates } = await useRatesData(lyra, marketName)
+export async function useDeals(strategy: Strategy) {
+  const { allRates } = await useRatesData(strategy.market)
   const res: Deal[] = []
   const providers = [ProviderType.LYRA, ProviderType.DERIBIT]
 
@@ -73,7 +73,7 @@ export async function useDeals(config: ArbConfig, lyra: Lyra, marketName: Underl
       const putDeal =
         maxPut?.bidPrice && minPut?.askPrice && maxPut.provider !== minPut.provider && maxPut.bidPrice - minPut.askPrice
 
-      if (callDeal && callDeal > config.profitThreshold) {
+      if (callDeal && callDeal > strategy.profitThreshold) {
         res.push({
           type: OptionType.CALL,
           term: maxCall.term,
@@ -84,7 +84,7 @@ export async function useDeals(config: ArbConfig, lyra: Lyra, marketName: Underl
           sell: maxCall,
         })
       }
-      if (putDeal && putDeal > config.profitThreshold) {
+      if (putDeal && putDeal > strategy.profitThreshold) {
         res.push({
           type: OptionType.PUT,
           term: maxPut.term,

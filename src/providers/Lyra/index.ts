@@ -1,9 +1,10 @@
-import Lyra, { Market } from '@lyrafinance/lyra-js'
+import { Market } from '@lyrafinance/lyra-js'
 import { UNIT } from '../../constants/bn'
 import { OptionsMap, OptionType, ProviderType } from '../../types/arbs'
 import fromBigNumber from '../../utils/fromBigNumber'
 import printObject from '../../utils/printObject'
 import { getExpirationTerm } from '../../utils/arbUtils'
+import getLyra from '../../utils/getLyra'
 
 export async function getMarket(market: Market) {
   const options = market.liveBoards().map((board) => {
@@ -57,7 +58,8 @@ export async function getMarket(market: Market) {
   return (await Promise.all(options?.flat()).catch(console.error))?.filter(Boolean) as OptionsMap[]
 }
 
-export async function getLyraRates(marketName: string, lyra: Lyra): Promise<OptionsMap[]> {
+export async function getLyraRates(marketName: string): Promise<OptionsMap[]> {
+  const lyra = getLyra()
   const market = await lyra.market(marketName)
   const rates = await getMarket(market)
 

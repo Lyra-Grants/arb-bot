@@ -21,3 +21,7 @@ export const DERIBIT_TESTNET: boolean = _.defaultTo(
   convertToBoolean(process.env.DERIBIT_TESTNET as string),
   true,
 ) as boolean
+
+//TELEGRAM ADDRESS TO REPORT TO
+export const TELEGRAM_ACCESS_TOKEN = _.defaultTo(process.env.TELEGRAM_ACCESS_TOKEN, '')
+export const TELEGRAM_CHANNEL = _.defaultTo(process.env.TELEGRAM_CHANNEL, '')
