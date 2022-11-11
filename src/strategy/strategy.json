@@ -3,7 +3,7 @@
   "pollingInterval": 100,
   "strategy": [
     {
-      "market": "SOL",
+      "market": "ETH",
       "optionTypes": ["CALL", "PUT"],
       "maxCollat": 1,
       "defaultTradeSize": 1,
