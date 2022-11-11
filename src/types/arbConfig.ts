@@ -16,4 +16,5 @@ export type Strategy = {
   colatPercent: number
   isBuyFirst: boolean
   profitThreshold: number
+  minAPY: number
 }

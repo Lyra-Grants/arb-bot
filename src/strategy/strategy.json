@@ -11,7 +11,8 @@
       "maxTradeSize": 1,
       "colatPercent": 80,
       "isBuyFirst": true,
-      "profitThreshold": 3
+      "profitThreshold": 3,
+      "minAPY": 14
     }
   ]
 }

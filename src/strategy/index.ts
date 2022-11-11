@@ -11,19 +11,24 @@ import { Arb, ArbDto, DeribitTradeArgs, LyraTradeArgs } from '../types/lyra'
 import { TradeResult } from '../types/trade'
 
 export async function executeStrat(strategy: Strategy) {
-  const arbs = await GetArbitrageDeals(strategy)
+  const arbDto = await GetArbitrageDeals(strategy)
+  arbDto.arbs = filterArbs(arbDto, strategy) ?? []
+
+  console.log(arbDto.arbs)
 
   if (REPORT_ONLY) {
     // TELEGRAM REPORT
-    await PostTelegram(ArbTelegram(arbs), TelegramClient)
+    await PostTelegram(ArbTelegram(arbDto), TelegramClient)
   } else {
-    const arb = filterArbs(arbs)
-
-    if (!arb) {
+    if (!arbDto.arbs) {
       console.log('No arb available')
       return
     }
-    await executeArb(arb, strategy)
+    // execute arbs
+    arbDto.arbs.map(async (arb) => {
+      await executeArb(arb, strategy)
+    })
+
     //  console.log(arb)
   }
 }
@@ -44,14 +49,12 @@ export async function executeArb(arb: Arb, strategy: Strategy) {
   }
 }
 
-export function filterArbs(arbDto: ArbDto) {
-  // todo use config to filter the arbs
-  // for now just get first one
+export function filterArbs(arbDto: ArbDto, strategy: Strategy) {
+  console.log(strategy.optionTypes)
   if (arbDto.arbs.length > 0) {
-    //arbDto.arbs.filter((x) => x.type === OptionType.CALL)
-
-    return arbDto.arbs[0]
+    return arbDto.arbs.filter((x) => strategy.optionTypes.includes(x.type)).filter((x) => x.apy >= strategy.minAPY)
   }
+  return []
 }
 
 // return {
