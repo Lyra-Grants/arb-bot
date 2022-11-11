@@ -52,7 +52,10 @@ export async function executeArb(arb: Arb, strategy: Strategy) {
 export function filterArbs(arbDto: ArbDto, strategy: Strategy) {
   console.log(strategy.optionTypes)
   if (arbDto.arbs.length > 0) {
-    return arbDto.arbs.filter((x) => strategy.optionTypes.includes(x.type)).filter((x) => x.apy >= strategy.minAPY)
+    return arbDto.arbs
+      .filter((x) => strategy.optionTypes.includes(x.type)) // CALL / PUT or BOTH
+      .filter((x) => x.apy >= strategy.minAPY) // MIN APY
+      .filter((x) => (strategy.sellLyraOnly ? x.sell.provider == ProviderType.LYRA : true)) // SELL on LYRA Only
   }
   return []
 }

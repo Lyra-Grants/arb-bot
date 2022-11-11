@@ -46,7 +46,6 @@ export const getBalances = async (provider: Provider, signer: ethers.Wallet) => 
 export function readConfig(): ArbConfig | undefined {
   try {
     const config: ArbConfig = arbConfig as unknown as ArbConfig
-    // set global config
     global.REPORT_ONLY = config.reportOnly ?? true
 
     return config

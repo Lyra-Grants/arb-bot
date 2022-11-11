@@ -12,7 +12,8 @@
       "colatPercent": 80,
       "isBuyFirst": true,
       "profitThreshold": 3,
-      "minAPY": 14
+      "minAPY": 14,
+      "sellLyraOnly": true
     }
   ]
 }

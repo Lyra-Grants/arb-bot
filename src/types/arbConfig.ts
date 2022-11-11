@@ -17,4 +17,5 @@ export type Strategy = {
   isBuyFirst: boolean
   profitThreshold: number
   minAPY: number
+  sellLyraOnly: boolean
 }
