@@ -1,4 +1,5 @@
 import { CoinGeckoClient } from '../clients/coinGeckoClient'
+import { Underlying } from '../types/arbs'
 import printObject from '../utils/printObject'
 
 export async function GetPrice(): Promise<void> {
@@ -12,13 +13,25 @@ export async function GetPrice(): Promise<void> {
       .then((resp) => {
         //printObject(resp.data)
         global.ETH_PRICE = resp.data['ethereum'].usd
-        global.ETH_24HR = resp.data['ethereum'].usd_24h_change
         global.BTC_PRICE = resp.data['bitcoin'].usd
-        global.BTC_24HR = resp.data['bitcoin'].usd_24h_change
         global.SOL_PRICE = resp.data['solana'].usd
-        global.SOL_24HR = resp.data['solana'].usd_24h_change
       })
   } catch (error) {
     console.log(error)
   }
+}
+
+export function GetMarketPrice(market: Underlying) {
+  if (market == Underlying.BTC) {
+    return global.BTC_PRICE
+  }
+  if (market == Underlying.SOL) {
+    return global.ETH_PRICE
+  }
+  if (market == Underlying.ETH) {
+    return global.ETH_PRICE
+  }
+
+  const marketNotFound = 'Market Price not found.'
+  throw new Error(marketNotFound)
 }

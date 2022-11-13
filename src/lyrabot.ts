@@ -7,7 +7,7 @@ import { ArbConfig } from './types/arbConfig'
 import printObject from './utils/printObject'
 import { Wallet } from './wallets/wallet'
 import * as arbConfig from './strategy/strategy.json'
-import { executeStrat } from './strategy'
+import { executeStrat, polling } from './strategy'
 import getLyra from './utils/getLyra'
 
 export async function initializeLyraBot() {
@@ -23,12 +23,7 @@ export async function initializeLyraBot() {
   const signer = new ethers.Wallet(Wallet().privateKey, lyra.provider)
   await Promise.all([getBalances(lyra.provider, signer), GetPrice()])
 
-  // execute
-  config.strategy.map(async (strat) => {
-    await executeStrat(strat)
-  })
-
-  console.log('ARB SUCCESS')
+  polling(config)
 }
 
 export const getBalances = async (provider: Provider, signer: ethers.Wallet) => {

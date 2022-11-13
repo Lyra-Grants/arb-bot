@@ -2,23 +2,45 @@ import { makeTradeLyra } from '../actions/maketrade'
 import { makeTradeDeribit } from '../actions/maketradeDeribit'
 import { TelegramClient } from '../clients/telegramClient'
 import { TokenNames } from '../constants/token'
+import { GetMarketPrice } from '../integrations/coingecko'
 import { PostTelegram } from '../integrations/telegram'
 import { GetArbitrageDeals } from '../lyra/arbitrage'
 import { ArbTelegram } from '../templates/arb'
-import { Strategy } from '../types/arbConfig'
+import { ArbConfig, Strategy } from '../types/arbConfig'
 import { OptionType, ProviderType } from '../types/arbs'
 import { Arb, ArbDto, DeribitTradeArgs, LyraTradeArgs } from '../types/lyra'
 import { TradeResult } from '../types/trade'
 
+export async function polling(config: ArbConfig) {
+  const ms = config?.pollingInterval ? config?.pollingInterval * 60000 : 300000
+  console.debug(`Polling every ${ms / 60000} mins`)
+  let timeout: NodeJS.Timeout | null
+
+  const poll = async () => {
+    try {
+      await Promise.all([
+        config.strategy.map(async (strat) => {
+          executeStrat(strat)
+        }),
+      ])
+    } catch (e) {
+      console.warn('Failed to poll')
+    }
+
+    setTimeout(poll, ms)
+  }
+
+  await poll()
+}
+
 export async function executeStrat(strategy: Strategy) {
   const arbDto = await GetArbitrageDeals(strategy)
+  arbDto.spot = GetMarketPrice(arbDto.market)
   arbDto.arbs = filterArbs(arbDto, strategy) ?? []
-
-  console.log(arbDto.arbs)
 
   if (REPORT_ONLY) {
     // TELEGRAM REPORT
-    await PostTelegram(ArbTelegram(arbDto), TelegramClient)
+    await PostTelegram(ArbTelegram(arbDto, strategy), TelegramClient)
   } else {
     if (!arbDto.arbs) {
       console.log('No arb available')
@@ -56,6 +78,7 @@ export function filterArbs(arbDto: ArbDto, strategy: Strategy) {
       .filter((x) => strategy.optionTypes.includes(x.type)) // CALL / PUT or BOTH
       .filter((x) => x.apy >= strategy.minAPY) // MIN APY
       .filter((x) => (strategy.sellLyraOnly ? x.sell.provider == ProviderType.LYRA : true)) // SELL on LYRA Only
+      .filter((x) => x.strike - arbDto.spot >= strategy.spotStrikeDiff) // strike price - spot price > spotStrikeDiff (so most likely in )
   }
   return []
 }
