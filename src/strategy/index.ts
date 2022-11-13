@@ -1,3 +1,4 @@
+import { Console } from 'console'
 import { makeTradeLyra } from '../actions/maketrade'
 import { makeTradeDeribit } from '../actions/maketradeDeribit'
 import { TelegramClient } from '../clients/telegramClient'
@@ -14,7 +15,6 @@ import { TradeResult } from '../types/trade'
 export async function polling(config: ArbConfig) {
   const ms = config?.pollingInterval ? config?.pollingInterval * 60000 : 300000
   console.debug(`Polling every ${ms / 60000} mins`)
-  let timeout: NodeJS.Timeout | null
 
   const poll = async () => {
     try {
@@ -56,19 +56,29 @@ export async function executeStrat(strategy: Strategy) {
 }
 
 export async function executeArb(arb: Arb, strategy: Strategy) {
-  // BUY SIDE
-  const buyResult = await trade(arb, strategy, true)
-  if (!buyResult.isSuccess) {
-    console.log(`Buy failed: ${buyResult.failReason}`)
+  const result1 = await tradeSide(arb, strategy, strategy.isBuyFirst)
+  if (!result1.isSuccess) {
+    // don't do 2nd part of trade
+    // retry?
     return
   }
 
-  // // SELL SIDE
-  const sellResult = await trade(arb, strategy, false)
-  if (!sellResult.isSuccess) {
-    console.log(`Sell failed: ${sellResult.failReason}`)
+  const result2 = await trade(arb, strategy, !strategy.isBuyFirst)
+  if (!result2.isSuccess) {
+    // todo: undo first trade?
     return
   }
+
+  console.log('Arb Success')
+  //todo: report success
+}
+
+export async function tradeSide(arb: Arb, strategy: Strategy, isBuy: boolean) {
+  const result = await trade(arb, strategy, isBuy)
+  if (!result.isSuccess) {
+    console.log(`${isBuy ? 'Buy' : 'Sell'} failed: ${result.failReason}`)
+  }
+  return result
 }
 
 export function filterArbs(arbDto: ArbDto, strategy: Strategy) {

@@ -7,10 +7,10 @@ import { ArbConfig } from './types/arbConfig'
 import printObject from './utils/printObject'
 import { Wallet } from './wallets/wallet'
 import * as arbConfig from './strategy/strategy.json'
-import { executeStrat, polling } from './strategy'
+import { polling } from './strategy'
 import getLyra from './utils/getLyra'
 
-export async function initializeLyraBot() {
+export async function goBot() {
   const lyra = getLyra()
 
   // read strats
@@ -33,7 +33,7 @@ export const getBalances = async (provider: Provider, signer: ethers.Wallet) => 
   console.log(`Eth: ${ethBalance}`)
 
   Object.values(Tokens).map(async (value, index) => {
-    const bal = await getTokenBalance(value, provider, signer)
+    const bal = getTokenBalance(value, provider, signer)
     console.log(`${Object.keys(Tokens)[index]}: ${bal}`)
   })
 }
