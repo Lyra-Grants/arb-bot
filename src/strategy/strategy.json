@@ -1,6 +1,6 @@
 {
-  "reportOnly": true,
-  "pollingInterval": 1,
+  "reportOnly": false,
+  "pollingInterval": 20,
   "strategy": [
     {
       "market": "ETH",
@@ -12,9 +12,10 @@
       "colatPercent": 80,
       "isBuyFirst": true,
       "profitThreshold": 3,
-      "minAPY": 0,
-      "sellLyraOnly": true,
-      "spotStrikeDiff": 0
+      "minAPY": 25,
+      "sellLyraOnly": false,
+      "spotStrikeDiff": 100,
+      "mostProfitableOnly": true
     }
   ]
 }

@@ -11,6 +11,7 @@ import { ArbConfig, Strategy } from '../types/arbConfig'
 import { OptionType, ProviderType } from '../types/arbs'
 import { Arb, ArbDto, DeribitTradeArgs, LyraTradeArgs } from '../types/lyra'
 import { TradeResult } from '../types/trade'
+import printObject from '../utils/printObject'
 
 export async function polling(config: ArbConfig) {
   const ms = config?.pollingInterval ? config?.pollingInterval * 60000 : 300000
@@ -38,20 +39,26 @@ export async function executeStrat(strategy: Strategy) {
   arbDto.spot = GetMarketPrice(arbDto.market)
   arbDto.arbs = filterArbs(arbDto, strategy) ?? []
 
+  if (arbDto.arbs.length == 0) {
+    console.log('No arb available')
+    return
+  }
+
   if (REPORT_ONLY) {
-    // TELEGRAM REPORT
+    // REPORT
     await PostTelegram(ArbTelegram(arbDto, strategy), TelegramClient)
   } else {
-    if (!arbDto.arbs) {
-      console.log('No arb available')
-      return
+    // EXECUTE
+    // only execute top 1 arb
+    if (strategy.mostProfitableOnly) {
+      printObject(arbDto.arbs[0])
+      await executeArb(arbDto.arbs[0], strategy)
+    } else {
+      // execute all arbs
+      arbDto.arbs.map(async (arb) => {
+        await executeArb(arb, strategy)
+      })
     }
-    // execute arbs
-    arbDto.arbs.map(async (arb) => {
-      await executeArb(arb, strategy)
-    })
-
-    //  console.log(arb)
   }
 }
 
@@ -88,7 +95,9 @@ export function filterArbs(arbDto: ArbDto, strategy: Strategy) {
       .filter((x) => strategy.optionTypes.includes(x.type)) // CALL / PUT or BOTH
       .filter((x) => x.apy >= strategy.minAPY) // MIN APY
       .filter((x) => (strategy.sellLyraOnly ? x.sell.provider == ProviderType.LYRA : true)) // SELL on LYRA Only
-      .filter((x) => x.strike - arbDto.spot >= strategy.spotStrikeDiff) // strike price - spot price > spotStrikeDiff (so most likely in )
+      .filter(
+        (x) => (x.type == OptionType.CALL ? x.strike - arbDto.spot : arbDto.spot - x.strike) >= strategy.spotStrikeDiff,
+      ) // strike price - spot price > spotStrikeDiff (so most likely in )
   }
   return []
 }

@@ -19,4 +19,5 @@ export type Strategy = {
   minAPY: number
   sellLyraOnly: boolean
   spotStrikeDiff: number
+  mostProfitableOnly: true
 }

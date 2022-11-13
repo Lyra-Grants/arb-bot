@@ -33,7 +33,7 @@ export const getBalances = async (provider: Provider, signer: ethers.Wallet) => 
   console.log(`Eth: ${ethBalance}`)
 
   Object.values(Tokens).map(async (value, index) => {
-    const bal = getTokenBalance(value, provider, signer)
+    const bal = await getTokenBalance(value, provider, signer)
     console.log(`${Object.keys(Tokens)[index]}: ${bal}`)
   })
 }
