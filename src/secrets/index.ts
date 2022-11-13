@@ -6,6 +6,8 @@ dotenv.config({ path: '.env' })
 
 export const INFURA_ID = _.defaultTo(process.env.INFURA_ID, '')
 export const INFURA_ID_OPTIMISM = _.defaultTo(process.env.INFURA_ID_OPTIMISM, '')
+export const ALCHEMY_ID = _.defaultTo(process.env.ALCHEMY_ID, '')
+
 export const TESTNET: boolean = _.defaultTo(convertToBoolean(process.env.TESTNET as string), true) as boolean
 export const ENTROPY = _.defaultTo(process.env.ENTROPY, '')
 
