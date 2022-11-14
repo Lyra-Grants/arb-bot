@@ -23,6 +23,8 @@ export async function goBot() {
   if (!REPORT_ONLY) {
     const signer = new ethers.Wallet(Wallet().privateKey, lyra.provider)
     await Promise.all([getBalances(lyra.provider, signer), GetPrice()])
+  } else {
+    await GetPrice()
   }
 
   polling(config)
