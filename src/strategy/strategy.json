@@ -1,5 +1,5 @@
 {
-  "reportOnly": true,
+  "reportOnly": false,
   "pollingInterval": 20,
   "strategy": [
     {
@@ -14,7 +14,7 @@
       "profitThreshold": 3,
       "minAPY": 25,
       "sellLyraOnly": false,
-      "spotStrikeDiff": 100,
+      "spotStrikeDiff": 200,
       "mostProfitableOnly": true
     }
   ]

@@ -7,6 +7,7 @@ import { GetMarketPrice } from '../integrations/coingecko'
 import { PostTelegram } from '../integrations/telegram'
 import { GetArbitrageDeals } from '../lyra/arbitrage'
 import { ArbTelegram } from '../templates/arb'
+import { TradeTelegram } from '../templates/trade'
 import { ArbConfig, Strategy } from '../types/arbConfig'
 import { OptionType, ProviderType } from '../types/arbs'
 import { Arb, ArbDto, DeribitTradeArgs, LyraTradeArgs } from '../types/lyra'
@@ -116,7 +117,7 @@ export async function trade(arb: Arb, strategy: Strategy, isBuy = true): Promise
   if (provider === ProviderType.LYRA) {
     return await tradeLyra(arb, strategy, size, isBuy)
   } else {
-    return await tradeDeribit(arb, size, isBuy)
+    return await tradeDeribit(arb, strategy, size, isBuy)
   }
 }
 
@@ -141,6 +142,16 @@ export const calcColateral = (arb: Arb, strategy: Strategy, size: number, isBuy:
   }
 }
 
+export async function reportTrade(
+  arb: Arb,
+  tradeResult: TradeResult,
+  strategy: Strategy,
+  size: number,
+  isBuy: boolean,
+) {
+  await PostTelegram(TradeTelegram(arb, tradeResult, strategy, size, isBuy), TelegramClient)
+}
+
 export const tradeLyra = async (arb: Arb, strategy: Strategy, size: number, isBuy = true) => {
   const colat = calcColateral(arb, strategy, size, isBuy)
 
@@ -156,10 +167,11 @@ export const tradeLyra = async (arb: Arb, strategy: Strategy, size: number, isBu
   }
 
   const result = await makeTradeLyra(tradeArgs)
+  await reportTrade(arb, result, strategy, size, isBuy)
   return result
 }
 
-export async function tradeDeribit(arb: Arb, size: number, isBuy = true) {
+export async function tradeDeribit(arb: Arb, strategy: Strategy, size: number, isBuy = true) {
   const args: DeribitTradeArgs = {
     amount: size,
     instrumentName: isBuy ? (arb.buy.id as string) : (arb.sell.id as string),
@@ -167,6 +179,7 @@ export async function tradeDeribit(arb: Arb, size: number, isBuy = true) {
   }
 
   const result = await makeTradeDeribit(args)
+  await reportTrade(arb, result, strategy, size, isBuy)
   return result
 }
 

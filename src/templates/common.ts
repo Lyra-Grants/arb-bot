@@ -56,3 +56,22 @@ export function FNS(value: number, decimals: number) {
     maximumFractionDigits: decimals,
   })}`
 }
+
+export function StatSymbol(asset: string) {
+  if (asset.toLowerCase() == 'eth') {
+    return '🔷'
+  }
+  if (asset.toLowerCase() == 'btc') {
+    return '🔶'
+  }
+  if (asset.toLowerCase() == 'sol') {
+    return '🟣'
+  }
+}
+
+export function BuySellSymbol(isBuy: boolean) {
+  if (isBuy) {
+    return '🟢'
+  }
+  return '🔴'
+}
