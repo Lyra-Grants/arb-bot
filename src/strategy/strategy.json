@@ -4,7 +4,7 @@
   "strategy": [
     {
       "market": "ETH",
-      "optionTypes": ["CALL", "PUT"],
+      "optionTypes": ["CALL"],
       "maxCollat": 1,
       "defaultTradeSize": 1,
       "minTradeSize": 1,
@@ -12,8 +12,8 @@
       "colatPercent": 80,
       "isBuyFirst": true,
       "profitThreshold": 3,
-      "minAPY": 45,
-      "sellLyraOnly": false,
+      "minAPY": 30,
+      "sellLyraOnly": true,
       "spotStrikeDiff": 100,
       "mostProfitableOnly": true
     }
