@@ -1,6 +1,6 @@
 {
   "reportOnly": true,
-  "pollingInterval": 20,
+  "pollingInterval": 5,
   "strategy": [
     {
       "market": "ETH",
