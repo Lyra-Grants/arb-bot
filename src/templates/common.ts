@@ -71,7 +71,7 @@ export function StatSymbol(asset: string) {
 
 export function BuySellSymbol(isBuy: boolean) {
   if (isBuy) {
-    return '🟢'
+    return '🔷'
   }
-  return '🔴'
+  return '🔶'
 }
