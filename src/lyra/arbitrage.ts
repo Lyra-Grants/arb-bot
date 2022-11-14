@@ -1,4 +1,3 @@
-import Lyra from '@lyrafinance/lyra-js'
 import { Deal, OptionType, ProviderType, Underlying } from '../types/arbs'
 import { useRatesData } from '../utils/arbUtils'
 import { maxBy, minBy } from 'lodash'
@@ -40,6 +39,8 @@ export async function GetArbitrageDeals(strategy: Strategy) {
   const event: ArbDto = {
     arbs: data,
     market: strategy.market,
+    spot: 0,
+    pollInterval: 0,
   }
 
   return event
