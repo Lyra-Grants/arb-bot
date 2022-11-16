@@ -6,7 +6,6 @@ import {
   DERIBIT_TESTNET,
   DERIBIT_TESTNET_CLIENT_ID,
   DERIBIT_TESTNET_CLIENT_SECRET,
-  TESTNET,
 } from '../secrets'
 import { ProviderType } from '../types/arbs'
 import { DeribitTradeArgs } from '../types/lyra'
@@ -29,7 +28,7 @@ export enum DeribitOrderType {
 export async function authenticateAndTradeDeribit(args: DeribitTradeArgs) {
   const rpc = new RpcWebSocketClient()
   await rpc.connect(getDeribitUrl())
-  console.log(`Deribit ${TESTNET ? 'TESTNET' : ''}: Connected!`)
+  console.log(`Deribit ${DERIBIT_TESTNET ? 'TESTNET' : ''}: Connected!`)
 
   const config = getAuthConfig()
   const tradeConfig = getTradeConfig(args)
@@ -39,7 +38,7 @@ export async function authenticateAndTradeDeribit(args: DeribitTradeArgs) {
     .call(config.method, config.params)
     .then((data) => {
       console.log(data)
-      console.log(`Deribit ${TESTNET ? 'TESTNET' : ''}: Authenticated!`)
+      console.log(`Deribit ${DERIBIT_TESTNET ? 'TESTNET' : ''}: Authenticated!`)
     })
     .catch((err) => {
       console.log(err)
@@ -50,7 +49,7 @@ export async function authenticateAndTradeDeribit(args: DeribitTradeArgs) {
     .call(tradeConfig.method, tradeConfig.params)
     .then((data) => {
       console.log(data)
-      console.log(`Deribit ${TESTNET ? 'TESTNET' : ''}: Trade!`)
+      console.log(`Deribit ${DERIBIT_TESTNET ? 'TESTNET' : ''}: Trade!`)
     })
     .catch((err) => {
       console.log(err)

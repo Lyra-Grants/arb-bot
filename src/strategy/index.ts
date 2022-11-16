@@ -1,4 +1,3 @@
-import { Console } from 'console'
 import { makeTradeLyra } from '../actions/maketrade'
 import { makeTradeDeribit } from '../actions/maketradeDeribit'
 import { TelegramClient } from '../clients/telegramClient'

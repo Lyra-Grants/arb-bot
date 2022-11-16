@@ -1,7 +1,6 @@
 import { OptionType, Underlying } from './arbs'
 
 export type ArbConfig = {
-  reportOnly: boolean
   pollingInterval: number
   strategy: Strategy[]
 }

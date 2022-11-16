@@ -1,5 +1,4 @@
 {
-  "reportOnly": true,
   "pollingInterval": 5,
   "strategy": [
     {
