@@ -2,12 +2,8 @@
 
 declare global {
   var ETH_PRICE: number
-  var ETH_24HR: number
   var BTC_PRICE: number
-  var BTC_24HR: number
-  var SOL_PRICE: number
-  var SOL_24HR: number
-  var REPORT_ONLY: boolean
+  var BALANCES: { [key: string]: number } = {}
 }
 
 declare module '*.json' {

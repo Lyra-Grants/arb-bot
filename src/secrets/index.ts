@@ -4,6 +4,7 @@ import { convertToBoolean } from '../utils/utils'
 
 dotenv.config({ path: '.env' })
 
+export const TESTNET = _.defaultTo(process.env.TESTNET, '')
 export const ALCHEMY_ID = _.defaultTo(process.env.ALCHEMY_ID, '')
 export const REPORT_ONLY: boolean = _.defaultTo(convertToBoolean(process.env.REPORT_ONLY as string), true) as boolean
 

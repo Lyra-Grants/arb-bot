@@ -3,9 +3,9 @@
 export enum Tokens {
   sUSD = '0x8c6f28f2f1a3c87f0f938b96d27520d9751ec8d9',
   sETH = '0xe405de8f52ba7559f9df3c368500b6e6ae6cee49',
-  sSOL = '0x8b2f7ae8ca8ee8428b6d76de88326bb413db2766',
   sBTC = '0x298b9b95708152ff6968aafd889c6586e9169f1d',
   USDC = '0x7f5c764cbc14f9669b88837ca1490cca17c31607',
+  DAI = '0xda10009cbd5d07dd0cecc66161fc93d7c9000da1',
 }
 
 export enum TokenNames {

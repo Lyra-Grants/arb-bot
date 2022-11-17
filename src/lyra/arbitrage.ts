@@ -11,10 +11,6 @@ export function GetPrice(market: Underlying) {
   if (market == Underlying.BTC) {
     price = BTC_PRICE
   }
-  if (market == Underlying.SOL) {
-    price = SOL_PRICE
-  }
-
   return price
 }
 

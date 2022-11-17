@@ -8,9 +8,15 @@ import { Wallet } from './wallets/wallet'
 import * as arbConfig from './strategy/strategy.json'
 import { polling } from './strategy'
 import getLyra from './utils/getLyra'
+import { REPORT_ONLY } from './secrets'
+import { BalancesTelegram } from './templates/balances'
+import { TelegramClient } from './clients/telegramClient'
+import { PostTelegram } from './integrations/telegram'
+import { convertToBoolean } from './utils/utils'
 
 export async function goBot() {
   const lyra = getLyra()
+  global.BALANCES = {}
 
   // read strats
   const config = readConfig()
@@ -30,15 +36,17 @@ export async function goBot() {
 }
 
 export const getBalances = async (provider: Provider, signer: ethers.Wallet) => {
-  console.log('Balances:')
-
   const ethBalance = await getBalance(signer.address, provider)
-  console.log(`Eth: ${ethBalance}`)
+  global.BALANCES['ETH'] = ethBalance
 
-  Object.values(Tokens).map(async (value, index) => {
-    const bal = await getTokenBalance(value, provider, signer)
-    console.log(`${Object.keys(Tokens)[index]}: ${bal}`)
-  })
+  await Promise.all(
+    Object.values(Tokens).map(async (value, index) => {
+      const bal = await getTokenBalance(value, provider, signer)
+      global.BALANCES[Object.keys(Tokens)[index] as string] = bal
+    }),
+  )
+
+  await PostTelegram(BalancesTelegram(global.BALANCES), TelegramClient)
 }
 
 export function readConfig(): ArbConfig | undefined {
