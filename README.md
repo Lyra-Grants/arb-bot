@@ -45,6 +45,8 @@ yarn install
 yarn start
 ```
 
+For full set up settings visit the [Lyra Arb Bot Wiki](https://github.com/Lyra-Grants/arb-bot/wiki/1.-Settings)
+
 ### Environment Variables
 
 - `TESTNET` - true/false (if true prints to console, doesn't post to telegram)
@@ -67,7 +69,7 @@ yarn start
 - `PRIVATE_KEY` - wallet private key
 - `PUBLIC_KEY` - wallet public key
 
-### Roadmaps
+### Roadmap
 
 2 versions of the bot, one public reporting bot that manages reporting arbs, one private bot set up by the user.
 Private bot has public bot functionality and in addition adds trade execution.
