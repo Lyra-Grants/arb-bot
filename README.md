@@ -12,7 +12,7 @@ A bot providing automated arbs between Lyra & Deribit.
 - [x] Polling mechanism - websocket or js call
 - [ ] Documentation
 
-### Configuration / Stragegy Requirements
+### Strategy Settings
 
 #### Arb Identification Settings
 
@@ -42,7 +42,7 @@ yarn start
 
 - `TESTNET` - true/false (if true prints to console, doesn't post to telegram)
 - `REPORT_ONLY` - Report arbs that meet strategy - don't execute.
-- `INFURA_ID_OPTIMISM` - for everything else
+- `ALCHEMY_ID` - alchemy ID.
 
 ### Integrations
 
