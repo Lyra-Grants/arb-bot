@@ -29,7 +29,7 @@ export async function goBot() {
     await Promise.all([getBalances(lyra.provider, signer)])
   }
 
-  polling(config)
+  await polling(config)
 }
 
 export const getBalances = async (provider: Provider, signer: ethers.Wallet) => {

@@ -15,8 +15,8 @@ export type Arb = {
 export type ArbDto = {
   arbs: Arb[]
   market: Underlying
-  spot: number
-  pollInterval: number
+  // spot: number
+  // pollInterval: number
 }
 
 export type LyraTradeArgs = {

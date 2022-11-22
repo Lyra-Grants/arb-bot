@@ -38,8 +38,6 @@ export async function GetArbitrageDeals(strategy: Strategy) {
   const event: ArbDto = {
     arbs: data,
     market: strategy.market,
-    spot: 0,
-    pollInterval: 0,
   }
 
   // console.log('*******************************')

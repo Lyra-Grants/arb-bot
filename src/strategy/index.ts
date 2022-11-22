@@ -18,6 +18,13 @@ export async function polling(config: ArbConfig) {
   const ms = config?.pollingInterval ? config?.pollingInterval * 60000 : 300000
   console.debug(`Polling every ${ms / 60000} mins`)
 
+  await GetSpotPrice()
+  await Promise.all([
+    config.strategy.map(async (strat) => {
+      reportStrat(strat)
+    }),
+  ])
+
   const poll = async () => {
     try {
       await GetSpotPrice()
@@ -36,13 +43,24 @@ export async function polling(config: ArbConfig) {
   await poll()
 }
 
+export async function reportStrat(strategy: Strategy) {
+  const arbDto: ArbDto = {
+    arbs: [],
+    market: strategy.market,
+  }
+
+  const spot = GetMarketPrice(arbDto.market)
+
+  await PostTelegram(ArbTelegram(arbDto, strategy, spot, true), TelegramClient)
+}
+
 export async function executeStrat(strategy: Strategy) {
   const arbDto = await GetArbitrageDeals(strategy)
 
   //printObject(arbDto)
 
-  arbDto.spot = GetMarketPrice(arbDto.market)
-  arbDto.arbs = filterArbs(arbDto, strategy) ?? []
+  const spot = GetMarketPrice(arbDto.market)
+  arbDto.arbs = filterArbs(arbDto, strategy, spot) ?? []
 
   if (arbDto.arbs.length == 0) {
     console.log('No arb available')
@@ -54,7 +72,7 @@ export async function executeStrat(strategy: Strategy) {
     // console.log('----')
     // console.log(arbDto.arbs)
     // console.log('----')
-    await PostTelegram(ArbTelegram(arbDto, strategy), TelegramClient)
+    await PostTelegram(ArbTelegram(arbDto, strategy, spot, false), TelegramClient)
   } else {
     // EXECUTE
     // only execute top 1 arb
@@ -96,7 +114,7 @@ export async function tradeSide(arb: Arb, strategy: Strategy, isBuy: boolean) {
   return result
 }
 
-export function filterArbs(arbDto: ArbDto, strategy: Strategy) {
+export function filterArbs(arbDto: ArbDto, strategy: Strategy, spot: number) {
   console.log('filtering arbs')
 
   console.log(arbDto.arbs)
@@ -108,7 +126,7 @@ export function filterArbs(arbDto: ArbDto, strategy: Strategy) {
       .filter(
         (x) =>
           strategy.spotStrikeDiff === 0 ??
-          (x.type == OptionType.CALL ? x.strike - arbDto.spot : arbDto.spot - x.strike) >= strategy.spotStrikeDiff,
+          (x.type == OptionType.CALL ? x.strike - spot : spot - x.strike) >= strategy.spotStrikeDiff,
       )
   }
   return []
