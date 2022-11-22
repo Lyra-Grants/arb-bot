@@ -4,14 +4,14 @@
     {
       "market": "ETH",
       "optionTypes": ["CALL"],
+      "profitThreshold": 3,
+      "minAPY": 3,
+      "sellLyraOnly": true,
+      "spotStrikeDiff": 0,
       "maxCollat": 1,
       "tradeSize": 1,
       "colatPercent": 80,
       "isBuyFirst": true,
-      "profitThreshold": 3,
-      "minAPY": 3,
-      "sellLyraOnly": true,
-      "spotStrikeDiff": -200,
       "mostProfitableOnly": false
     }
   ]
