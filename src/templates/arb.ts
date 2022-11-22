@@ -9,19 +9,20 @@ export function ArbTelegram(dto: ArbDto, strategy: Strategy) {
   post.push(`${StatSymbol(dto.market)} $${dto.market.toUpperCase()} Arbs Deribit | Lyra\n\n`)
   post.push(`<strong>Strategy</strong>:\n`)
   post.push(`<i>Options:</i> ${strategy.optionTypes.join(', ')}\n`)
-  post.push(`<i>Colat Perc:</i> ${strategy.colatPercent}\n`)
-  post.push(`<i>Buy First?:</i> ${strategy.isBuyFirst}\n`)
   post.push(`<i>Profit Threshold:</i> ${strategy.profitThreshold}\n`)
   post.push(`<i>Min APY:</i> ${strategy.minAPY}\n`)
   post.push(`<i>Sell Lyra Only:</i> ${strategy.sellLyraOnly}\n`)
   post.push(`<i>Spot Strike Diff:</i> ${strategy.spotStrikeDiff}\n\n`)
+  post.push(`<i>Lyra Colat Perc :</i> ${strategy.colatPercent}\n`)
+  post.push(`<i>Buy First?:</i> ${strategy.isBuyFirst}\n`)
   post.push(`<strong>Spot Price</strong>\n$${dto.spot}\n\n`)
   post.push(`<strong>Arbs</strong>\n`)
 
+  console.log(dto.arbs.length)
   if (dto.arbs.length == 0) {
     post.push('No arb opportunities found for strategy.')
   } else {
-    dto.arbs.slice(0, 10).map((arb) => {
+    dto.arbs.map((arb) => {
       post.push(`<strong>$${FN(arb.strike, 0)} ${FormattedDateShort(new Date(arb.expiration))} ${arb.type}</strong>\n`)
       post.push(
         `${BuySellSymbol(true)} Buy $${FN(arb.buy.askPrice as number, 2)} ${

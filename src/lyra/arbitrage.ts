@@ -4,6 +4,7 @@ import { maxBy, minBy } from 'lodash'
 import moment from 'moment'
 import { Arb, ArbDto } from '../types/lyra'
 import { Strategy } from '../types/arbConfig'
+import printObject from '../utils/printObject'
 
 export function GetPrice(market: Underlying) {
   let price = ETH_PRICE
@@ -17,7 +18,9 @@ export function GetPrice(market: Underlying) {
 export async function GetArbitrageDeals(strategy: Strategy) {
   const price = GetPrice(strategy.market)
   const deals = await useDeals(strategy)
-
+  // console.log('----------------')
+  // printObject(deals)
+  // console.log('----------------')
   const data = deals.map((deal) => {
     const momentExp = moment(deal?.expiration)
     const duration = moment.duration(momentExp.diff(moment())).asYears()
@@ -39,6 +42,9 @@ export async function GetArbitrageDeals(strategy: Strategy) {
     pollInterval: 0,
   }
 
+  // console.log('*******************************')
+  // printObject(event.arbs)
+  // console.log('*******************************')
   return event
 }
 
@@ -46,8 +52,6 @@ export async function useDeals(strategy: Strategy) {
   const { allRates } = await useRatesData(strategy.market)
   const res: Deal[] = []
   const providers = [ProviderType.LYRA, ProviderType.DERIBIT]
-
-  //console.log(allRates)
 
   Object.values(allRates).forEach((strike) =>
     Object.values(strike).forEach((interception) => {
@@ -94,6 +98,5 @@ export async function useDeals(strategy: Strategy) {
       }
     }),
   )
-
   return res
 }

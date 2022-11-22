@@ -5,14 +5,13 @@ import { Tokens } from './constants/token'
 import { GetPrice } from './integrations/coingecko'
 import { ArbConfig } from './types/arbConfig'
 import { Wallet } from './wallets/wallet'
-import * as arbConfig from './strategy/strategy.json'
+import * as arbConfig from './strategies.json'
 import { polling } from './strategy'
 import getLyra from './utils/getLyra'
 import { REPORT_ONLY } from './secrets'
 import { BalancesTelegram } from './templates/balances'
 import { TelegramClient } from './clients/telegramClient'
 import { PostTelegram } from './integrations/telegram'
-import { convertToBoolean } from './utils/utils'
 
 export async function goBot() {
   const lyra = getLyra()

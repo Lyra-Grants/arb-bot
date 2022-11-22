@@ -9,9 +9,7 @@ export type Strategy = {
   market: Underlying
   optionTypes: OptionType[]
   maxCollat: number
-  defaultTradeSize: number
-  minTradeSize: number
-  maxTradeSize: number
+  tradeSize: number
   colatPercent: number
   isBuyFirst: boolean
   profitThreshold: number

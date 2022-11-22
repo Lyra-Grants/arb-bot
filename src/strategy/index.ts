@@ -37,6 +37,9 @@ export async function polling(config: ArbConfig) {
 
 export async function executeStrat(strategy: Strategy) {
   const arbDto = await GetArbitrageDeals(strategy)
+
+  //printObject(arbDto)
+
   arbDto.spot = GetMarketPrice(arbDto.market)
   arbDto.arbs = filterArbs(arbDto, strategy) ?? []
 
@@ -47,12 +50,15 @@ export async function executeStrat(strategy: Strategy) {
 
   if (REPORT_ONLY) {
     // REPORT
+    // console.log('----')
+    // console.log(arbDto.arbs)
+    // console.log('----')
     await PostTelegram(ArbTelegram(arbDto, strategy), TelegramClient)
   } else {
     // EXECUTE
     // only execute top 1 arb
     if (strategy.mostProfitableOnly) {
-      printObject(arbDto.arbs[0])
+      //printObject(arbDto.arbs[0])
       await executeArb(arbDto.arbs[0], strategy)
     } else {
       // execute all arbs
@@ -90,7 +96,9 @@ export async function tradeSide(arb: Arb, strategy: Strategy, isBuy: boolean) {
 }
 
 export function filterArbs(arbDto: ArbDto, strategy: Strategy) {
-  console.log(strategy.optionTypes)
+  console.log('filtering arbs')
+
+  console.log(arbDto.arbs)
   if (arbDto.arbs.length > 0) {
     return arbDto.arbs
       .filter((x) => strategy.optionTypes.includes(x.type)) // CALL / PUT or BOTH
@@ -98,7 +106,7 @@ export function filterArbs(arbDto: ArbDto, strategy: Strategy) {
       .filter((x) => (strategy.sellLyraOnly ? x.sell.provider == ProviderType.LYRA : true)) // SELL on LYRA Only
       .filter(
         (x) => (x.type == OptionType.CALL ? x.strike - arbDto.spot : arbDto.spot - x.strike) >= strategy.spotStrikeDiff,
-      ) // strike price - spot price > spotStrikeDiff (so most likely in )
+      )
   }
   return []
 }
@@ -190,5 +198,5 @@ export const getSize = (strategy: Strategy) => {
   // check slippage on Lyra
   // at moment just return default from config
 
-  return strategy.defaultTradeSize
+  return strategy.tradeSize
 }
