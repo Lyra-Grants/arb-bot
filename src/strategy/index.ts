@@ -105,7 +105,9 @@ export function filterArbs(arbDto: ArbDto, strategy: Strategy) {
       .filter((x) => x.apy >= strategy.minAPY) // MIN APY
       .filter((x) => (strategy.sellLyraOnly ? x.sell.provider == ProviderType.LYRA : true)) // SELL on LYRA Only
       .filter(
-        (x) => (x.type == OptionType.CALL ? x.strike - arbDto.spot : arbDto.spot - x.strike) >= strategy.spotStrikeDiff,
+        (x) =>
+          strategy.spotStrikeDiff === 0 ??
+          (x.type == OptionType.CALL ? x.strike - arbDto.spot : arbDto.spot - x.strike) >= strategy.spotStrikeDiff,
       )
   }
   return []
