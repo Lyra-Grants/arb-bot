@@ -48,7 +48,6 @@ export type OptionsMap = InstrumentMeta & InstrumentCouple
 export enum Underlying {
   ETH = 'ETH',
   BTC = 'BTC',
-  SOL = 'SOL',
 }
 
 export type DealPart = { price: number; provider: ProviderType }

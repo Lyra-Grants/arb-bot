@@ -2,7 +2,7 @@ import { makeTradeLyra } from '../actions/maketrade'
 import { makeTradeDeribit } from '../actions/maketradeDeribit'
 import { TelegramClient } from '../clients/telegramClient'
 import { TokenNames } from '../constants/token'
-import { GetMarketPrice } from '../integrations/coingecko'
+import { GetMarketPrice, GetSpotPrice } from '../integrations/coingecko'
 import { PostTelegram } from '../integrations/telegram'
 import { GetArbitrageDeals } from '../lyra/arbitrage'
 import { REPORT_ONLY } from '../secrets'
@@ -20,6 +20,7 @@ export async function polling(config: ArbConfig) {
 
   const poll = async () => {
     try {
+      await GetSpotPrice()
       await Promise.all([
         config.strategy.map(async (strat) => {
           executeStrat(strat)
