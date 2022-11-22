@@ -1,0 +1,31 @@
+{
+  "pollingInterval": 5,
+  "strategy": [
+    {
+      "market": "ETH",
+      "optionTypes": ["CALL"],
+      "profitThreshold": 3,
+      "minAPY": 30,
+      "sellLyraOnly": true,
+      "spotStrikeDiff": 100,
+      "maxCollat": 1,
+      "tradeSize": 1,
+      "colatPercent": 80,
+      "isBuyFirst": true,
+      "mostProfitableOnly": false
+    },
+    {
+      "market": "BTC",
+      "optionTypes": ["CALL"],
+      "profitThreshold": 3,
+      "minAPY": 30,
+      "sellLyraOnly": true,
+      "spotStrikeDiff": 2500,
+      "maxCollat": 1,
+      "tradeSize": 1,
+      "colatPercent": 80,
+      "isBuyFirst": true,
+      "mostProfitableOnly": false
+    }
+  ]
+}
