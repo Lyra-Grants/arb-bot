@@ -3,7 +3,7 @@
 A bot providing automated arbs between Lyra & Deribit.
 
 - [x] Identify Arbs
-- [x] Add Market Orders - execute first on Deribit then Lyra
+- [x] Add Market Order
 - [x] Execute trade - Lyra
 - [x] Execute trade - Deribit
 - [x] Add configs / strategy mechanism
@@ -14,13 +14,22 @@ A bot providing automated arbs between Lyra & Deribit.
 
 ### Configuration / Stragegy Requirements
 
+#### Arb Identification Settings
+
 - [x] Markets ETH / BTC
-- [ ] Max Collateral
-- [ ] Min / Max Order Size
-- [x] Partial Collateral %
-- [x] Buy / Sell First
-- [x] Polling Interval
-- [x] Read Json Strategy files - execute accord to strategies
+- [x] Option Types [Call, Put]
+- [x] Profit Threshold
+- [x] Minimum APY
+- [x] Sell Lyra Only
+- [x] Spot / Strike Difference
+
+#### Arb Execution Settings
+
+- [x] Max Colat
+- [x] Trade Size
+- [x] Colat Percent
+- [x] Buy First
+- [x] Most Profitable Only
 
 Run locally:
 
@@ -31,8 +40,8 @@ yarn start
 
 ### Environment Variables
 
-- `TESTNET` - true/false (if true prints to console, doesn't post)
-- `INFURA_ID` - used to get ENS
+- `TESTNET` - true/false (if true prints to console, doesn't post to telegram)
+- `REPORT_ONLY` - Report arbs that meet strategy - don't execute.
 - `INFURA_ID_OPTIMISM` - for everything else
 
 ### Integrations
