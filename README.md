@@ -1,15 +1,22 @@
 # Lyra Arb Bot \_/ 🤖
 
 A bot providing automated arbs between Lyra & Deribit.
+Atm the moment you must run this bot yourself for reporting & execution.
+
+#### Arb Identification
 
 - [x] Identify Arbs
-- [x] Add Market Order
+- [x] Use strategy - identify different arbs
+- [x] Report strategy & arbs via telegram
+
+### Arb Execution
+
+- [x] Market Order Trade Execution
 - [x] Execute trade - Lyra
 - [x] Execute trade - Deribit
-- [x] Add configs / strategy mechanism
-- [ ] Add revert mechanism (price moves, arb invalidated)
-- [ ] Trade / logging - reporting - Telegram bot to report trades?
-- [x] Polling mechanism - websocket or js call
+- [ ] Revert mechanism (price moves, arb invalidated)
+- [ ] Trade / logging - reporting via Telegram
+- [x] Polling mechanism - js call
 - [ ] Documentation
 
 ### Strategy Settings
@@ -59,6 +66,19 @@ yarn start
 - `WALLET_ADDRESS` - your wallet address
 - `PRIVATE_KEY` - wallet private key
 - `PUBLIC_KEY` - wallet public key
+
+### Roadmaps
+
+2 versions of the bot, one public reporting bot that manages reporting arbs, one private bot set up by the user.
+Private bot has public bot functionality and in addition adds trade execution.
+
+- [ ] Reporting Bot (RB) - add to own TG channel, receives strat params posts arbs.
+- [ ] RB - store user strategies in external db.
+- [ ] RB - report user strategies to channels.
+- [ ] Execution Bot (EB) - add collateral management.
+- [ ] EB - Fully automated arbitrage via Telegram.
+
+Completely automated strategies executable via Telegram.
 
 ### Resources
 
