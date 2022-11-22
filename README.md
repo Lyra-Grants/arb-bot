@@ -9,7 +9,7 @@ Atm the moment you must run this bot yourself for reporting & execution.
 - [x] Use strategy - identify different arbs
 - [x] Report strategy & arbs via telegram
 
-### Arb Execution
+#### Arb Execution
 
 - [x] Market Order Trade Execution
 - [x] Execute trade - Lyra
