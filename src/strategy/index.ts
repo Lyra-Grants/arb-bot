@@ -123,10 +123,10 @@ export function filterArbs(arbDto: ArbDto, strategy: Strategy, spot: number) {
       .filter((x) => strategy.optionTypes.includes(x.type)) // CALL / PUT or BOTH
       .filter((x) => x.apy >= strategy.minAPY) // MIN APY
       .filter((x) => (strategy.sellLyraOnly ? x.sell.provider == ProviderType.LYRA : true)) // SELL on LYRA Only
-      .filter(
-        (x) =>
-          strategy.spotStrikeDiff === 0 ??
-          (x.type == OptionType.CALL ? x.strike - spot : spot - x.strike) >= strategy.spotStrikeDiff,
+      .filter((x) =>
+        strategy.spotStrikeDiff === 0
+          ? (x.type == OptionType.CALL ? x.strike - spot : spot - x.strike) >= strategy.spotStrikeDiff
+          : true,
       )
   }
   return []

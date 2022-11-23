@@ -5,7 +5,7 @@
       "market": "ETH",
       "optionTypes": ["CALL"],
       "profitThreshold": 3,
-      "minAPY": 30,
+      "minAPY": 20,
       "sellLyraOnly": true,
       "spotStrikeDiff": 100,
       "maxCollat": 1,

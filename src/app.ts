@@ -1,12 +1,15 @@
 import { Telegraf } from 'telegraf'
 import { goBot } from './bot'
 import { PostTelegram } from './integrations/telegram'
-import { TELEGRAM_ACCESS_TOKEN } from './secrets'
+import { TELEGRAM_ACCESS_TOKEN, TESTNET } from './secrets'
 
 async function Initialize(): Promise<void> {
   try {
-    RegisterShutdownEvents()
-    await Notifier(false)
+    if (!TESTNET) {
+      RegisterShutdownEvents()
+      await Notifier(false)
+    }
+
     await goBot()
   } catch (error) {
     console.error(error)

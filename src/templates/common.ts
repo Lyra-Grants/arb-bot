@@ -64,14 +64,18 @@ export function StatSymbol(asset: string) {
   if (asset.toLowerCase() == 'btc') {
     return '🔶'
   }
-  if (asset.toLowerCase() == 'sol') {
-    return '🟣'
-  }
 }
 
 export function BuySellSymbol(isBuy: boolean) {
   if (isBuy) {
-    return '🔷'
+    return '🟢'
   }
-  return '🔶'
+  return '🔴'
+}
+
+export function YesNoSymbol(isYes: boolean) {
+  if (isYes) {
+    return '✅'
+  }
+  return '❌'
 }

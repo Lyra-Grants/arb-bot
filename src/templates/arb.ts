@@ -1,6 +1,6 @@
 import { ArbDto } from '../types/lyra'
 import { ProviderType } from '../types/arbs'
-import { BuySellSymbol, FN, FormattedDateShort } from './common'
+import { BuySellSymbol, FN, FormattedDateShort, YesNoSymbol } from './common'
 import { StatSymbol } from './common'
 import { Strategy } from '../types/arbConfig'
 import { REPORT_ONLY } from '../secrets'
@@ -34,7 +34,7 @@ export function ArbTelegram(dto: ArbDto, strategy: Strategy, spot: number, first
   if (!firstRun) {
     post.push(`<strong>Arbs</strong>\n`)
     if (dto.arbs.length == 0) {
-      post.push('No arb opportunities found for strategy.')
+      post.push(`${YesNoSymbol(dto.arbs.length > 0)}No arb opportunities found for strategy.`)
     } else {
       dto.arbs.map((arb) => {
         post.push(
