@@ -90,14 +90,14 @@ export async function executeStrat(strategy: Strategy) {
 
 export async function executeArb(arb: Arb, strategy: Strategy) {
   const result1 = await tradeSide(arb, strategy, strategy.isBuyFirst)
-  if (!result1.isSuccess) {
+  if (!result1?.isSuccess) {
     // don't do 2nd part of trade
     // retry?
     return
   }
 
   const result2 = await trade(arb, strategy, !strategy.isBuyFirst)
-  if (!result2.isSuccess) {
+  if (!result2?.isSuccess) {
     // todo: undo first trade?
     return
   }
@@ -108,16 +108,14 @@ export async function executeArb(arb: Arb, strategy: Strategy) {
 
 export async function tradeSide(arb: Arb, strategy: Strategy, isBuy: boolean) {
   const result = await trade(arb, strategy, isBuy)
-  if (!result.isSuccess) {
-    console.log(`${isBuy ? 'Buy' : 'Sell'} failed: ${result.failReason}`)
+  if (!result?.isSuccess) {
+    console.log(`${isBuy ? 'Buy' : 'Sell'} failed: ${result?.failReason}`)
   }
   return result
 }
 
 export function filterArbs(arbDto: ArbDto, strategy: Strategy, spot: number) {
-  console.log('filtering arbs')
-
-  console.log(arbDto.arbs)
+  console.log(arbDto)
   if (arbDto.arbs.length > 0) {
     return arbDto.arbs
       .filter((x) => strategy.optionTypes.includes(x.type)) // CALL / PUT or BOTH
@@ -139,7 +137,7 @@ export function filterArbs(arbDto: ArbDto, strategy: Strategy, spot: number) {
 //   provider: provider,
 // }
 
-export async function trade(arb: Arb, strategy: Strategy, isBuy = true): Promise<TradeResult> {
+export async function trade(arb: Arb, strategy: Strategy, isBuy = true): Promise<TradeResult | undefined> {
   const provider = isBuy ? arb?.buy.provider : arb.sell.provider
   const size = getSize(strategy)
 

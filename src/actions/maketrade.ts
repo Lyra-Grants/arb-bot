@@ -20,6 +20,7 @@ export const defaultResult = (provider: ProviderType): TradeResult => {
     pricePerOption: 0,
     failReason: '',
     provider: provider,
+    lyraArgs: undefined,
   }
 }
 
@@ -60,16 +61,20 @@ export const makeTradeLyra = async (args: LyraTradeArgs): Promise<TradeResult> =
           trade?.collateral?.min as unknown as ethers.BigNumber,
         )}`,
       )
-      trade = await prepareTrade(
-        lyra,
-        owner,
-        market,
-        option,
-        isBuy,
-        size,
-        trade?.collateral?.min as unknown as ethers.BigNumber,
-        isBaseCollateral,
-      )
+      try {
+        trade = await prepareTrade(
+          lyra,
+          owner,
+          market,
+          option,
+          isBuy,
+          size,
+          trade?.collateral?.min as unknown as ethers.BigNumber,
+          isBaseCollateral,
+        )
+      } catch (ex) {
+        result.failReason = 'Failed.'
+      }
     } else if (trade.disabledReason === TradeDisabledReason.TooMuchCollateral) {
       console.log(
         `Retrying Trade with max collateral, new collat: ${fromBigNumber(
@@ -102,30 +107,28 @@ export const makeTradeLyra = async (args: LyraTradeArgs): Promise<TradeResult> =
     result.failReason = trade.disabledReason as string
     return result
   }
-
-  const response = await signer.sendTransaction(trade.tx)
-  console.log('Executed trade:', response.hash)
-  const receipt = await response.wait()
-  console.log('tx', receipt.transactionHash)
-
-  result.isSuccess = receipt.status === 1
-
   try {
+    const response = await signer.sendTransaction(trade.tx)
+    console.log('Executed trade:', response.hash)
+    const receipt = await response.wait()
+    console.log('tx', receipt.transactionHash)
+
+    result.isSuccess = receipt.status === 1
+
     const [tradeEvent] = await TradeEvent.getByHash(lyra, receipt.transactionHash)
     result.pricePerOption = fromBigNumber(tradeEvent.pricePerOption)
 
-    printObject('Result', {
-      timestamp: tradeEvent.timestamp,
-      blockNumber: tradeEvent.blockNumber,
+    result.lyraArgs = {
       positionId: tradeEvent.positionId,
-      premium: tradeEvent.premium,
-      fee: tradeEvent.fee,
-      feeComponents: tradeEvent.feeComponents,
-      collateral: tradeEvent.collateralValue,
-    })
-    console.log('Slippage', 100 * (fromBigNumber(trade.quoted.mul(UNIT).div(tradeEvent.premium)) - 1), '%')
+      premium: fromBigNumber(tradeEvent.premium),
+      fee: fromBigNumber(tradeEvent.fee),
+      trader: tradeEvent.trader,
+      collateral: tradeEvent?.collateralValue ? fromBigNumber(tradeEvent.collateralValue) : 0,
+      slippage: 100 * (fromBigNumber(trade.quoted.mul(UNIT).div(tradeEvent.premium)) - 1),
+    }
   } catch (ex) {
     console.log(ex)
+    result.failReason = 'Fail Fail Fail'
   }
 
   return result

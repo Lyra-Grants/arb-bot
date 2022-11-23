@@ -9,6 +9,10 @@ export function PortfolioLink(account: string) {
   return `${LyraDappUrl()}/portfolio?see=${account}`
 }
 
+export function PositionLink(asset: string, account: string, positionId: number): string {
+  return `${LyraDappUrl()}/position?market=${asset}&id=${positionId}&see=${account}`
+}
+
 export function ExpiryLink(asset: string, date: string) {
   return `${LyraDappUrl()}/trade/${asset.toLowerCase()}?expiry=${date}`
 }

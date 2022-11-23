@@ -11,8 +11,8 @@
       "maxCollat": 1,
       "tradeSize": 1,
       "colatPercent": 80,
-      "isBuyFirst": true,
-      "mostProfitableOnly": false
+      "isBuyFirst": false,
+      "mostProfitableOnly": true
     }
   ]
 }
