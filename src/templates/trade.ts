@@ -20,30 +20,45 @@ export function TradeTelegram(arb: Arb, tradeResult: TradeResult, strategy: Stra
   post.push(`\n${YesNoSymbol(tradeResult.isSuccess)} <i>Success?:</i> <strong>${tradeResult.isSuccess}</strong>\n`)
 
   if (!tradeResult.isSuccess) {
-    post.push(`😭 <i>Fail Reason:<i> <strong>${tradeResult.failReason}<strong>\n`)
+    post.push(`😭 <i>Fail Reason:</i> <strong>${tradeResult.failReason}</strong>\n`)
   }
 
   if (tradeResult.provider === ProviderType.LYRA) {
-    if (tradeResult.lyraArgs) {
+    if (tradeResult.lyraResult) {
       post.push(`\n<strong>LYRA Trade Details:</strong>\n`)
       if (tradeResult.pricePerOption > 0) {
         post.push(`<i>Price Per Option:</i> <strong>$${FN(tradeResult.pricePerOption, 2)}</strong>\n`)
       }
-      if (tradeResult?.lyraArgs?.collateral > 0) {
-        post.push(`<i>Collateral Value:</i> <strong>$${FN(tradeResult.lyraArgs?.collateral, 2)}</strong>\n`)
+      if (tradeResult?.lyraResult?.collateral > 0) {
+        post.push(`<i>Collateral Value:</i> <strong>$${FN(tradeResult.lyraResult?.collateral, 2)}</strong>\n`)
       }
-      post.push(`<i>Premium:</i> <strong>$${FN(tradeResult.lyraArgs.premium, 2)}</strong>\n`)
-      post.push(`<i>Fee:</i> <strong>$${FN(tradeResult.lyraArgs.fee, 2)}</strong>\n`)
+      post.push(`<i>Premium:</i> <strong>$${FN(tradeResult.lyraResult.premium, 2)}</strong>\n`)
+      post.push(`<i>Fee:</i> <strong>$${FN(tradeResult.lyraResult.fee, 2)}</strong>\n`)
       // post.push(`<i>Trader:</i> <strong>${tradeResult.lyraArgs.trader}</strong>\n`)
-      post.push(`<i>Slippage:</i> <strong>${FN(tradeResult.lyraArgs.slippage, 2)}%</strong>\n`)
+      post.push(`<i>IV:</i> <strong>${FN(tradeResult.lyraResult.iv, 2)}%</strong>\n`)
+      post.push(`<i>Slippage:</i> <strong>${FN(tradeResult.lyraResult.slippage, 2)}%</strong>\n`)
       post.push(
         `<a href="${PositionLink(
           strategy.market,
-          tradeResult.lyraArgs.trader,
-          tradeResult.lyraArgs.positionId,
+          tradeResult.lyraResult.trader,
+          tradeResult.lyraResult.positionId,
         )}">View Position</a>\n`,
       )
     }
   }
+  if (tradeResult.provider === ProviderType.DERIBIT) {
+    if (tradeResult.deribitResult) {
+      post.push(`\n<strong>Deribit Trade Details:</strong>\n`)
+      if (tradeResult.pricePerOption > 0) {
+        post.push(`<i>Price Per Option:</i> <strong>$${FN(tradeResult.pricePerOption, 2)}</strong>\n`)
+      }
+      if (tradeResult.deribitResult.trades[0]) {
+        const trade = tradeResult.deribitResult.trades[0]
+        post.push(`<i>Fee:</i> <strong>$${FN(trade.fee * trade.underlying_price, 2)}</strong>\n`)
+        post.push(`<i>IV:</i> <strong>$${FN(trade.iv, 2)}</strong>\n`)
+      }
+    }
+  }
+
   return post.join('')
 }

@@ -20,7 +20,8 @@ export const defaultResult = (provider: ProviderType): TradeResult => {
     pricePerOption: 0,
     failReason: '',
     provider: provider,
-    lyraArgs: undefined,
+    lyraResult: undefined,
+    deribitResult: undefined,
   }
 }
 
@@ -118,13 +119,14 @@ export const makeTradeLyra = async (args: LyraTradeArgs): Promise<TradeResult> =
     const [tradeEvent] = await TradeEvent.getByHash(lyra, receipt.transactionHash)
     result.pricePerOption = fromBigNumber(tradeEvent.pricePerOption)
 
-    result.lyraArgs = {
+    result.lyraResult = {
       positionId: tradeEvent.positionId,
       premium: fromBigNumber(tradeEvent.premium),
       fee: fromBigNumber(tradeEvent.fee),
       trader: tradeEvent.trader,
       collateral: tradeEvent?.collateralValue ? fromBigNumber(tradeEvent.collateralValue) : 0,
       slippage: 100 * (fromBigNumber(trade.quoted.mul(UNIT).div(tradeEvent.premium)) - 1),
+      iv: fromBigNumber(trade.iv),
     }
   } catch (ex) {
     console.log(ex)

@@ -8,7 +8,7 @@ import {
   DERIBIT_TESTNET_CLIENT_SECRET,
 } from '../secrets'
 import { ProviderType } from '../types/arbs'
-import { DeribitTradeArgs } from '../types/lyra'
+import { DeribitTradeArgs, DeribitTradeResult } from '../types/lyra'
 import { TradeResult } from '../types/trade'
 import { defaultResult } from './maketrade'
 
@@ -25,7 +25,7 @@ export enum DeribitOrderType {
   Market = 'market',
 }
 
-export async function authenticateAndTradeDeribit(args: DeribitTradeArgs) {
+export async function authenticateAndTradeDeribit(args: DeribitTradeArgs): Promise<DeribitTradeResult | undefined> {
   const rpc = new RpcWebSocketClient()
   await rpc.connect(getDeribitUrl())
   console.log(`Deribit ${DERIBIT_TESTNET ? 'TESTNET' : ''}: Connected!`)
@@ -48,19 +48,35 @@ export async function authenticateAndTradeDeribit(args: DeribitTradeArgs) {
   await rpc
     .call(tradeConfig.method, tradeConfig.params)
     .then((data) => {
-      console.log(data)
       console.log(`Deribit ${DERIBIT_TESTNET ? 'TESTNET' : ''}: Trade!`)
+      return data as DeribitTradeResult
     })
     .catch((err) => {
       console.log(err)
     })
     .finally(() => rpc.ws.close())
+  return undefined
 }
 
 export const makeTradeDeribit = async (args: DeribitTradeArgs): Promise<TradeResult> => {
-  await authenticateAndTradeDeribit(args)
-  const result = defaultResult(ProviderType.DERIBIT)
-  result.isSuccess = true
+  const deribitResponse = await authenticateAndTradeDeribit(args)
+  const isSuccess = deribitResponse?.trades ? deribitResponse?.trades?.length > 0 : false
+  const trade = deribitResponse?.trades[0]
+
+  if (!trade) {
+    return defaultResult(ProviderType.DERIBIT)
+  }
+
+  const price = trade?.price * trade?.index_price
+
+  const result: TradeResult = {
+    isSuccess: isSuccess,
+    pricePerOption: price,
+    failReason: '',
+    provider: ProviderType.DERIBIT,
+    deribitResult: deribitResponse,
+    lyraResult: undefined,
+  }
 
   return result
 }
