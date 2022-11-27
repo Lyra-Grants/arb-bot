@@ -8,7 +8,7 @@ import {
   DERIBIT_TESTNET_CLIENT_SECRET,
 } from '../secrets'
 import { ProviderType } from '../types/arbs'
-import { DeribitTradeArgs, DeribitTradeResult } from '../types/lyra'
+import { DeribitError, DeribitResult, DeribitTradeArgs, DeribitTradeResult } from '../types/lyra'
 import { TradeResult } from '../types/trade'
 import { defaultResult } from './maketrade'
 
@@ -25,7 +25,7 @@ export enum DeribitOrderType {
   Market = 'market',
 }
 
-export async function authenticateAndTradeDeribit(args: DeribitTradeArgs): Promise<DeribitTradeResult | undefined> {
+export async function authenticateAndTradeDeribit(args: DeribitTradeArgs): Promise<DeribitResult> {
   const rpc = new RpcWebSocketClient()
   await rpc.connect(getDeribitUrl())
   console.log(`Deribit ${DERIBIT_TESTNET ? 'TESTNET' : ''}: Connected!`)
@@ -34,7 +34,7 @@ export async function authenticateAndTradeDeribit(args: DeribitTradeArgs): Promi
   const tradeConfig = getTradeConfig(args)
 
   // authenticate
-  await rpc
+  const auth = rpc
     .call(config.method, config.params)
     .then((data) => {
       console.log(data)
@@ -45,40 +45,84 @@ export async function authenticateAndTradeDeribit(args: DeribitTradeArgs): Promi
     })
 
   // trade
-  await rpc
+  let tradeError = false
+  const trade = rpc
     .call(tradeConfig.method, tradeConfig.params)
     .then((data) => {
       console.log(`Deribit ${DERIBIT_TESTNET ? 'TESTNET' : ''}: Trade!`)
-      return data as DeribitTradeResult
+      try {
+        return data
+      } catch (ex) {
+        tradeError = true
+        const error: DeribitError = {
+          message: `Deribit Error`,
+          code: -1,
+        }
+        console.log(ex)
+        return error
+      }
     })
     .catch((err) => {
-      console.log(err)
+      tradeError = true
+      return err
     })
     .finally(() => rpc.ws.close())
-  return undefined
+
+  const [, tradeResult] = await Promise.all([auth, trade])
+
+  const result: DeribitResult = {
+    tradeError: tradeError,
+    deribitError: tradeError ? (tradeResult as DeribitError) : undefined,
+    deribitTradeResult: tradeError ? undefined : (tradeResult as DeribitTradeResult),
+  }
+  return result
 }
 
 export const makeTradeDeribit = async (args: DeribitTradeArgs): Promise<TradeResult> => {
   const deribitResponse = await authenticateAndTradeDeribit(args)
-  const isSuccess = deribitResponse?.trades ? deribitResponse?.trades?.length > 0 : false
-  const trade = deribitResponse?.trades[0]
+  console.log('--RESPONSE--')
+  console.log(deribitResponse)
+  console.log('--END-RESPONSE--')
 
-  if (!trade) {
-    return defaultResult(ProviderType.DERIBIT)
+  // deal with error when trading
+  if (deribitResponse.tradeError) {
+    const result: TradeResult = {
+      isSuccess: false,
+      pricePerOption: 0,
+      failReason: deribitResponse.deribitError?.message ?? '',
+      provider: ProviderType.DERIBIT,
+      deribitResult: undefined,
+      lyraResult: undefined,
+    }
+    return result
   }
 
-  const price = trade?.price * trade?.index_price
+  // todo: deal with market order posted but no response
+  // check if any trades
+  const isSuccess = deribitResponse?.deribitTradeResult?.trades
+    ? deribitResponse?.deribitTradeResult.trades?.length > 0
+    : false
 
-  const result: TradeResult = {
-    isSuccess: isSuccess,
-    pricePerOption: price,
-    failReason: '',
-    provider: ProviderType.DERIBIT,
-    deribitResult: deribitResponse,
-    lyraResult: undefined,
+  if (!isSuccess) {
+    return defaultResult(ProviderType.DERIBIT, 'Market Order, no trade filled.')
   }
 
-  return result
+  // should this aggregated?
+  const trade = deribitResponse?.deribitTradeResult?.trades[0]
+
+  if (trade) {
+    // SUCCESSFULL TRADE Boom!
+    const result: TradeResult = {
+      isSuccess: true,
+      pricePerOption: trade?.price * trade?.index_price,
+      failReason: '',
+      provider: ProviderType.DERIBIT,
+      deribitResult: deribitResponse.deribitTradeResult,
+      lyraResult: undefined,
+    }
+    return result
+  }
+  return defaultResult(ProviderType.DERIBIT, 'Unknown Error.')
 }
 
 export function getTradeConfig(args: DeribitTradeArgs) {
@@ -90,7 +134,6 @@ export function getTradeConfig(args: DeribitTradeArgs) {
       type: DeribitOrderType.Market,
     },
   }
-  console.log(config)
   return config
 }
 

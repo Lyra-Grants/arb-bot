@@ -36,6 +36,21 @@ export type DeribitTradeArgs = {
   buy: boolean
 }
 
+export type DeribitError = {
+  message: string
+  data?: {
+    reason: string
+    param: string
+  }
+  code: number
+}
+
+export type DeribitResult = {
+  tradeError: boolean
+  deribitError: DeribitError | undefined
+  deribitTradeResult: DeribitTradeResult | undefined
+}
+
 // https://github.com/deribit/deribit-api-clients/blob/7ae49f6c4df5c231ed8b346925ee3539dbde46e9/typescript-node/model/userTrade.ts
 export type DeribitTradeResult = {
   trades: [

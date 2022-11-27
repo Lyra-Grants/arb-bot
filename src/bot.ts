@@ -12,6 +12,8 @@ import { REPORT_ONLY } from './secrets'
 import { BalancesTelegram } from './templates/balances'
 import { TelegramClient } from './clients/telegramClient'
 import { PostTelegram } from './integrations/telegram'
+import { authenticateAndTradeDeribit, makeTradeDeribit } from './actions/maketradeDeribit'
+import { DeribitTradeArgs } from './types/lyra'
 
 export async function goBot() {
   const lyra = getLyra()
@@ -29,6 +31,13 @@ export async function goBot() {
     await Promise.all([getBalances(lyra.provider, signer)])
   }
 
+  // const testTrade: DeribitTradeArgs = {
+  //   amount: 1,
+  //   instrumentName: 'ETH-2DEC22-25000-C',
+  //   buy: true,
+  // }
+
+  //await makeTradeDeribit(testTrade)
   await polling(config)
 }
 

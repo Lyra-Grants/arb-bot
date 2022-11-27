@@ -14,11 +14,11 @@ import toBigNumber from '../utils/toBigNumber'
 // Increase slippage for debugging
 const SLIPPAGE = 0.1 / 100
 
-export const defaultResult = (provider: ProviderType): TradeResult => {
+export const defaultResult = (provider: ProviderType, failReason: string): TradeResult => {
   return {
     isSuccess: false,
     pricePerOption: 0,
-    failReason: '',
+    failReason: failReason,
     provider: provider,
     lyraResult: undefined,
     deribitResult: undefined,
@@ -40,7 +40,7 @@ export const makeTradeLyra = async (args: LyraTradeArgs): Promise<TradeResult> =
 
   const market = await lyra.market(marketAddressOrName)
   const option = market.liveOption(strikeId, isCall)
-  const result = defaultResult(ProviderType.LYRA)
+  const result = defaultResult(ProviderType.LYRA, '')
 
   console.log(
     `${isBuy ? 'Buying' : 'Selling'} ${args.size} ${market.name} ${isCall ? 'Calls' : 'Puts'} for $${fromBigNumber(
