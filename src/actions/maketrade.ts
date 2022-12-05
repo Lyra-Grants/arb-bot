@@ -28,7 +28,6 @@ export const defaultResult = (provider: ProviderType, failReason: string): Trade
 export const makeTradeLyra = async (args: LyraTradeArgs): Promise<TradeResult> => {
   const lyra = getLyra()
   const signer = getSigner()
-
   const size = toBigNumber(args.size)
   const isCall = args.call
   const isBuy = args.buy
@@ -39,8 +38,16 @@ export const makeTradeLyra = async (args: LyraTradeArgs): Promise<TradeResult> =
   const owner = signer.address
 
   const market = await lyra.market(marketAddressOrName)
-  const option = market.liveOption(strikeId, isCall)
   const result = defaultResult(ProviderType.LYRA, '')
+  let option: Option | undefined = undefined
+
+  try {
+    option = market.liveOption(strikeId, isCall)
+  } catch (ex) {
+    console.log(ex)
+    result.failReason = 'Strike is expired or does not exist for market'
+    return result
+  }
 
   console.log(
     `${isBuy ? 'Buying' : 'Selling'} ${args.size} ${market.name} ${isCall ? 'Calls' : 'Puts'} for $${fromBigNumber(
