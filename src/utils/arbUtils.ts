@@ -4,7 +4,6 @@ import { STRIKE_CUTOFF } from '../constants/arbConstants'
 import { OptionsMap, OptionType, ProviderType, Underlying } from '../types/arbs'
 import { getDeribitRates } from '../providers/deribit'
 import { getLyraRates } from '../providers/Lyra'
-import Lyra from '@lyrafinance/lyra-js'
 
 type Strikes = {
   allStrikes?: number[]
@@ -71,8 +70,6 @@ export async function useRatesData(marketName: Underlying, filterSell = false) {
   const providers: ProviderType[] = [ProviderType.LYRA, ProviderType.DERIBIT]
 
   const [deribit, lyra] = await Promise.all([getDeribitRates(marketName), getLyraRates(marketName)])
-
-  const l1 = lyra
 
   const rates = {
     [ProviderType.DERIBIT]: deribit,
