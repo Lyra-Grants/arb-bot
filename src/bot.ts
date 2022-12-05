@@ -1,19 +1,23 @@
 import { Provider } from '@ethersproject/providers'
 import { ethers } from 'ethers'
 import { getBalance, getTokenBalance } from './actions/balance'
-import { Tokens } from './constants/token'
+import { TokenNames, Tokens } from './constants/token'
 import { GetPrice } from './integrations/coingecko'
-import { ArbConfig } from './types/arbConfig'
+import { ArbConfig, Strategy } from './types/arbConfig'
 import { Wallet } from './wallets/wallet'
 import * as arbConfig from './strategies.json'
-import { polling } from './strategy'
+import { polling, reportTrade } from './strategy'
 import getLyra from './utils/getLyra'
 import { REPORT_ONLY } from './secrets'
 import { BalancesTelegram } from './templates/balances'
 import { TelegramClient } from './clients/telegramClient'
 import { PostTelegram } from './integrations/telegram'
 import { authenticateAndTradeDeribit, makeTradeDeribit } from './actions/maketradeDeribit'
-import { DeribitTradeArgs } from './types/lyra'
+import { Arb, DeribitTradeArgs, LyraTradeArgs } from './types/lyra'
+import printObject from './utils/printObject'
+import { OptionType, Underlying } from './types/arbs'
+import { makeTradeLyra } from './actions/maketrade'
+import { testRevertTradeDeribit, testRevertTradeLyra } from './test-trade'
 
 export async function goBot() {
   const lyra = getLyra()
@@ -31,14 +35,13 @@ export async function goBot() {
     await Promise.all([getBalances(lyra.provider, signer)])
   }
 
-  // const testTrade: DeribitTradeArgs = {
-  //   amount: 1,
-  //   instrumentName: 'ETH-2DEC22-25000-C',
-  //   buy: true,
-  // }
+  // test trade reverts
+  await testRevertTradeLyra()
 
-  //await makeTradeDeribit(testTrade)
-  await polling(config)
+  // test
+  await testRevertTradeDeribit()
+
+  //await polling(config)
 }
 
 export const getBalances = async (provider: Provider, signer: ethers.Wallet) => {

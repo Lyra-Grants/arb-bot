@@ -56,7 +56,6 @@ export async function reportStrat(strategy: Strategy) {
 
 export async function executeStrat(strategy: Strategy) {
   const arbDto = await GetArbitrageDeals(strategy)
-
   //printObject(arbDto)
 
   const spot = GetMarketPrice(arbDto.market)
@@ -89,25 +88,32 @@ export async function executeStrat(strategy: Strategy) {
 }
 
 export async function executeArb(arb: Arb, strategy: Strategy) {
-  const result1 = await tradeSide(arb, strategy, strategy.isBuyFirst)
+  const result1 = await tradeSide(arb, strategy, strategy.isBuyFirst, false)
   if (!result1?.isSuccess) {
     // don't do 2nd part of trade
     // retry?
+    console.log('First side of trade failed.')
     return
   }
 
-  const result2 = await trade(arb, strategy, !strategy.isBuyFirst)
-  if (!result2?.isSuccess) {
-    // todo: undo first trade?
-    return
-  }
+  console.log('Reverting Result')
+  const revertResult = await tradeSide(arb, strategy, strategy.isBuyFirst, true)
+
+  // const result2 = await trade(arb, strategy, !strategy.isBuyFirst, false)
+  // if (!result2?.isSuccess) {
+  //   // 2nd side of trade failed.
+  //   // revert the first side
+  //   // report it
+
+  //   return
+  // }
 
   console.log('Arb Success')
   //todo: report success
 }
 
-export async function tradeSide(arb: Arb, strategy: Strategy, isBuy: boolean) {
-  const result = await trade(arb, strategy, isBuy)
+export async function tradeSide(arb: Arb, strategy: Strategy, isBuy: boolean, revertTrade: boolean) {
+  const result = await trade(arb, strategy, isBuy, revertTrade)
   if (!result?.isSuccess) {
     console.log(`${isBuy ? 'Buy' : 'Sell'} failed: ${result?.failReason}`)
   }
@@ -115,7 +121,8 @@ export async function tradeSide(arb: Arb, strategy: Strategy, isBuy: boolean) {
 }
 
 export function filterArbs(arbDto: ArbDto, strategy: Strategy, spot: number) {
-  console.log(arbDto)
+  printObject(arbDto)
+
   if (arbDto.arbs.length > 0) {
     return arbDto.arbs
       .filter((x) => strategy.optionTypes.includes(x.type)) // CALL / PUT or BOTH
@@ -137,14 +144,19 @@ export function filterArbs(arbDto: ArbDto, strategy: Strategy, spot: number) {
 //   provider: provider,
 // }
 
-export async function trade(arb: Arb, strategy: Strategy, isBuy = true): Promise<TradeResult | undefined> {
+export async function trade(
+  arb: Arb,
+  strategy: Strategy,
+  isBuy = true,
+  revertTrade = false,
+): Promise<TradeResult | undefined> {
   const provider = isBuy ? arb?.buy.provider : arb.sell.provider
   const size = getSize(strategy)
 
   if (provider === ProviderType.LYRA) {
-    return await tradeLyra(arb, strategy, size, isBuy)
+    return await tradeLyra(arb, strategy, size, isBuy, revertTrade)
   } else {
-    return await tradeDeribit(arb, strategy, size, isBuy)
+    return await tradeDeribit(arb, strategy, size, isBuy, revertTrade)
   }
 }
 
@@ -175,11 +187,16 @@ export async function reportTrade(
   strategy: Strategy,
   size: number,
   isBuy: boolean,
+  revertTrade: boolean,
 ) {
-  await PostTelegram(TradeTelegram(arb, tradeResult, strategy, size, isBuy), TelegramClient)
+  await PostTelegram(TradeTelegram(arb, tradeResult, strategy, size, isBuy, revertTrade), TelegramClient)
 }
 
-export const tradeLyra = async (arb: Arb, strategy: Strategy, size: number, isBuy = true) => {
+export const tradeLyra = async (arb: Arb, strategy: Strategy, size: number, isBuy = true, revertTrade = false) => {
+  if (revertTrade) {
+    isBuy = !isBuy
+  }
+
   const colat = calcColateral(arb, strategy, size, isBuy)
 
   const tradeArgs: LyraTradeArgs = {
@@ -194,11 +211,15 @@ export const tradeLyra = async (arb: Arb, strategy: Strategy, size: number, isBu
   }
 
   const result = await makeTradeLyra(tradeArgs)
-  await reportTrade(arb, result, strategy, size, isBuy)
+  await reportTrade(arb, result, strategy, size, isBuy, revertTrade)
   return result
 }
 
-export async function tradeDeribit(arb: Arb, strategy: Strategy, size: number, isBuy = true) {
+export async function tradeDeribit(arb: Arb, strategy: Strategy, size: number, isBuy = true, revertTrade = false) {
+  if (revertTrade) {
+    isBuy = !isBuy
+  }
+
   const args: DeribitTradeArgs = {
     amount: size,
     instrumentName: isBuy ? (arb.buy.id as string) : (arb.sell.id as string),
@@ -206,7 +227,7 @@ export async function tradeDeribit(arb: Arb, strategy: Strategy, size: number, i
   }
 
   const result = await makeTradeDeribit(args)
-  await reportTrade(arb, result, strategy, size, isBuy)
+  await reportTrade(arb, result, strategy, size, isBuy, revertTrade)
   return result
 }
 

@@ -5,9 +5,20 @@ import { TradeResult } from '../types/trade'
 import { ProviderType, Underlying } from '../types/arbs'
 import { PostTelegram } from '../integrations/telegram'
 
-export function TradeTelegram(arb: Arb, tradeResult: TradeResult, strategy: Strategy, size: number, isBuy: boolean) {
+export function TradeTelegram(
+  arb: Arb,
+  tradeResult: TradeResult,
+  strategy: Strategy,
+  size: number,
+  isBuy: boolean,
+  revertTrade: boolean,
+) {
   const post: string[] = []
-  post.push(`<strong>Trade Executed!</strong>\n`)
+  if (revertTrade) {
+    post.push(`<strong>Trade Reverted!</strong>\n`)
+  } else {
+    post.push(`<strong>New Trade!</strong>\n`)
+  }
   post.push(
     `${BuySellSymbol(isBuy)} <i>${isBuy ? 'Buy' : 'Sell'}:</i> <strong>$${strategy.market.toUpperCase()}</strong>\n`,
   )
@@ -55,7 +66,7 @@ export function TradeTelegram(arb: Arb, tradeResult: TradeResult, strategy: Stra
       if (tradeResult.deribitResult.trades[0]) {
         const trade = tradeResult.deribitResult.trades[0]
         post.push(`<i>Fee:</i> <strong>$${FN(trade.fee * trade.underlying_price, 2)}</strong>\n`)
-        post.push(`<i>IV:</i> <strong>$${FN(trade.iv, 2)}</strong>\n`)
+        post.push(`<i>IV:</i> <strong>${FN(trade.iv, 2)}%</strong>\n`)
       }
     }
   }
