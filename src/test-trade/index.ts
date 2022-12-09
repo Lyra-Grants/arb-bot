@@ -5,18 +5,20 @@ import { reportTrade } from '../strategy'
 import { Strategy } from '../types/arbConfig'
 import { Instrument, OptionType, ProviderType, Underlying } from '../types/arbs'
 import { LyraTradeArgs, Arb, DeribitTradeArgs } from '../types/lyra'
+import getLyra from '../utils/getLyra'
 import printObject from '../utils/printObject'
 
 // TEST DEFAULTS
 const lyraArgs: LyraTradeArgs = {
   size: 0.01,
   market: Underlying.ETH,
-  call: true,
-  buy: false,
-  strike: 289,
+  call: false,
+  buy: true,
+  strike: 0,
   collat: 0.01,
   base: true,
   stable: TokenNames.sUSD,
+  positionId: 0,
 }
 
 const buyInstrument: Instrument = {
@@ -70,15 +72,32 @@ const strategy: Strategy = {
 }
 
 export async function testRevertTradeLyra() {
-  // test reverting the
+  // leg 1
+  const lyra = getLyra()
+
+  const market = await lyra.market(Underlying.ETH)
+  const board = market.liveBoards()[1]
+  const strike = board.strikes().find((strike) => strike.isDeltaInRange)
+
+  if (!strike) {
+    console.log('No strike in delta range')
+    return
+  }
+
+  lyraArgs.strike = strike.id
+
   const result = await makeTradeLyra(lyraArgs)
-  printObject(result)
+  const positionId = result.lyraResult?.positionId
   await reportTrade(arb, result, strategy, 1, true, false)
 
-  //
-  lyraArgs.buy = false
-  const result2 = await makeTradeLyra(lyraArgs)
+  // leg 2
+  lyraArgs.buy = !lyraArgs.buy
 
+  if (positionId) {
+    lyraArgs.positionId = positionId
+  }
+
+  const result2 = await makeTradeLyra(lyraArgs)
   await reportTrade(arb, result2, strategy, 1, false, true)
 }
 

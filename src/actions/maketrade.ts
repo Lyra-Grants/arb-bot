@@ -36,10 +36,10 @@ export const makeTradeLyra = async (args: LyraTradeArgs): Promise<TradeResult> =
   const marketAddressOrName = args.market
   const isBaseCollateral = args.base
   const owner = signer.address
-
   const market = await lyra.market(marketAddressOrName)
   const result = defaultResult(ProviderType.LYRA, '')
   let option: Option | undefined = undefined
+  const positionId = args.positionId
 
   try {
     option = market.liveOption(strikeId, isCall)
@@ -59,7 +59,17 @@ export const makeTradeLyra = async (args: LyraTradeArgs): Promise<TradeResult> =
   await approve(lyra, signer, market, market.quoteToken.address)
 
   // first stab
-  let trade = await prepareTrade(lyra, owner, market, option, isBuy, size, setToCollateral, isBaseCollateral)
+  let trade = await prepareTrade(
+    lyra,
+    owner,
+    market,
+    option,
+    isBuy,
+    size,
+    setToCollateral,
+    isBaseCollateral,
+    positionId,
+  )
 
   if (trade.isDisabled) {
     // set collat to the minimum
@@ -79,6 +89,7 @@ export const makeTradeLyra = async (args: LyraTradeArgs): Promise<TradeResult> =
           size,
           trade?.collateral?.min as unknown as ethers.BigNumber,
           isBaseCollateral,
+          positionId,
         )
       } catch (ex) {
         result.failReason = 'Failed.'
@@ -98,6 +109,7 @@ export const makeTradeLyra = async (args: LyraTradeArgs): Promise<TradeResult> =
         size,
         trade?.collateral?.max as unknown as ethers.BigNumber,
         isBaseCollateral,
+        positionId,
       )
     } else {
       result.failReason = trade.disabledReason as string
@@ -152,8 +164,18 @@ export const prepareTrade = async (
   size: ethers.BigNumber,
   setToCollateral: ethers.BigNumber | undefined,
   isBaseCollateral: boolean,
+  positionId: number,
 ) => {
-  // Prepare Trade
+  if (positionId != 0) {
+    const position = await lyra.position(market.name, positionId)
+    const positionTrade = await position.trade(isBuy, size, SLIPPAGE, {
+      setToCollateral,
+      isBaseCollateral,
+      premiumSlippage: SLIPPAGE,
+    })
+    return positionTrade
+  }
+
   const trade = await Trade.get(lyra, owner, market.address, option.strike().id, option.isCall, isBuy, size, {
     setToCollateral,
     isBaseCollateral,

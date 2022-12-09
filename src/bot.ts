@@ -1,22 +1,16 @@
 import { Provider } from '@ethersproject/providers'
 import { ethers } from 'ethers'
 import { getBalance, getTokenBalance } from './actions/balance'
-import { TokenNames, Tokens } from './constants/token'
-import { GetPrice } from './integrations/coingecko'
-import { ArbConfig, Strategy } from './types/arbConfig'
+import { Tokens } from './constants/token'
+import { ArbConfig } from './types/arbConfig'
 import { Wallet } from './wallets/wallet'
 import * as arbConfig from './strategies.json'
-import { polling, reportTrade } from './strategy'
+import { polling } from './strategy'
 import getLyra from './utils/getLyra'
 import { REPORT_ONLY } from './secrets'
 import { BalancesTelegram } from './templates/balances'
 import { TelegramClient } from './clients/telegramClient'
 import { PostTelegram } from './integrations/telegram'
-import { authenticateAndTradeDeribit, makeTradeDeribit } from './actions/maketradeDeribit'
-import { Arb, DeribitTradeArgs, LyraTradeArgs } from './types/lyra'
-import printObject from './utils/printObject'
-import { OptionType, Underlying } from './types/arbs'
-import { makeTradeLyra } from './actions/maketrade'
 import { testRevertTradeDeribit, testRevertTradeLyra } from './test-trade'
 
 export async function goBot() {
@@ -39,9 +33,9 @@ export async function goBot() {
   await testRevertTradeLyra()
 
   // test
-  await testRevertTradeDeribit()
+  //await testRevertTradeDeribit()
 
-  //await polling(config)
+  // await polling(config)
 }
 
 export const getBalances = async (provider: Provider, signer: ethers.Wallet) => {

@@ -28,6 +28,7 @@ export type LyraTradeArgs = {
   collat: number
   base: boolean
   stable: string
+  positionId: number
 }
 
 export type DeribitTradeArgs = {
