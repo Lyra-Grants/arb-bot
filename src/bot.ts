@@ -26,19 +26,17 @@ export async function goBot() {
   // get wallet balances / prices
   if (!REPORT_ONLY) {
     const signer = new ethers.Wallet(Wallet().privateKey, lyra.provider)
-    await Promise.all([getBalances(lyra.provider, signer)])
+    await Promise.all([getBalances(lyra.provider, signer, true)])
   }
 
   // test trade reverts
-  await testRevertTradeLyra()
+  //await testRevertTradeLyra()
+  // await testRevertTradeDeribit()
 
-  // test
-  //await testRevertTradeDeribit()
-
-  // await polling(config)
+  await polling(config)
 }
 
-export const getBalances = async (provider: Provider, signer: ethers.Wallet) => {
+export const getBalances = async (provider: Provider, signer: ethers.Wallet, postTelegram: boolean) => {
   const ethBalance = await getBalance(signer.address, provider)
   global.BALANCES['ETH'] = ethBalance
 
@@ -48,8 +46,9 @@ export const getBalances = async (provider: Provider, signer: ethers.Wallet) => 
       global.BALANCES[Object.keys(Tokens)[index] as string] = bal
     }),
   )
-
-  await PostTelegram(BalancesTelegram(global.BALANCES), TelegramClient)
+  if (postTelegram) {
+    await PostTelegram(BalancesTelegram(global.BALANCES), TelegramClient)
+  }
 }
 
 export function readConfig(): ArbConfig | undefined {
