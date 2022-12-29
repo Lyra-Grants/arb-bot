@@ -114,8 +114,7 @@ export async function testRevertTradeDeribit() {
   await reportTrade(arb, result, strategy, 1, true, false)
 
   // leg 2
-
-  deribitArgs.buy = false
+  deribitArgs.buy = !deribitArgs.buy
   const result2 = await makeTradeDeribit(deribitArgs)
   await reportTrade(arb, result2, strategy, 1, false, true)
 }

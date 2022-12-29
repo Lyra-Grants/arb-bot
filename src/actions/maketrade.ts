@@ -42,9 +42,13 @@ export const makeTradeLyra = async (args: LyraTradeArgs): Promise<TradeResult> =
   const positionId = args.positionId
 
   try {
+    console.log(`STRIKEID: ${strikeId}`)
+    console.log(`ISCALL: ${isCall}`)
+
     option = market.liveOption(strikeId, isCall)
   } catch (ex) {
     console.log(ex)
+    result.isSuccess = false
     result.failReason = 'Strike is expired or does not exist for market'
     return result
   }
@@ -71,6 +75,7 @@ export const makeTradeLyra = async (args: LyraTradeArgs): Promise<TradeResult> =
     positionId,
   )
 
+  // trade is disabled
   if (trade.isDisabled) {
     // set collat to the minimum
     if (trade.disabledReason === TradeDisabledReason.NotEnoughCollateral) {
@@ -92,7 +97,9 @@ export const makeTradeLyra = async (args: LyraTradeArgs): Promise<TradeResult> =
           positionId,
         )
       } catch (ex) {
+        result.isSuccess = false
         result.failReason = 'Failed.'
+        return result
       }
     } else if (trade.disabledReason === TradeDisabledReason.TooMuchCollateral) {
       console.log(
@@ -100,33 +107,44 @@ export const makeTradeLyra = async (args: LyraTradeArgs): Promise<TradeResult> =
           trade?.collateral?.max as unknown as ethers.BigNumber,
         )}`,
       )
-      trade = await prepareTrade(
-        lyra,
-        owner,
-        market,
-        option,
-        isBuy,
-        size,
-        trade?.collateral?.max as unknown as ethers.BigNumber,
-        isBaseCollateral,
-        positionId,
-      )
+      try {
+        trade = await prepareTrade(
+          lyra,
+          owner,
+          market,
+          option,
+          isBuy,
+          size,
+          trade?.collateral?.max as unknown as ethers.BigNumber,
+          isBaseCollateral,
+          positionId,
+        )
+      } catch (ex) {
+        result.isSuccess = false
+        result.failReason = 'Failed.'
+        return result
+      }
     } else {
+      result.isSuccess = false
       result.failReason = trade.disabledReason as string
       return result
     }
   }
 
-  //console.log('------------------ PREPARED TRADE START ------------------')
-  //printObject(trade)
-  //console.log('------------------ PREPARED TRADE END ------------------')
+  console.log('------------------ PREPARED TRADE START ------------------')
+  printObject(trade)
+  console.log('------------------ PREPARED TRADE END ------------------')
+
+  // TODO trade preparation might still have failed. -> so return fail with fail reason
 
   // Check if trade is disabled
   if (trade.disabledReason) {
     console.log('Disabled:', trade.disabledReason)
+    result.isSuccess = false
     result.failReason = trade.disabledReason as string
     return result
   }
+
   try {
     const response = await signer.sendTransaction(trade.tx)
     console.log('Executed trade:', response.hash)
