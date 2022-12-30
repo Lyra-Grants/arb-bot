@@ -16,7 +16,6 @@ const lyraArgs: LyraTradeArgs = {
   buy: true,
   strike: 0,
   collat: 0.01,
-  base: true,
   stable: TokenNames.sUSD,
   positionId: 0,
 }

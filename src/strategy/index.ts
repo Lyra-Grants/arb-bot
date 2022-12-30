@@ -1,5 +1,7 @@
-import { makeTradeLyra } from '../actions/maketrade'
+import { ethers } from 'ethers'
+import { defaultResult, makeTradeLyra } from '../actions/maketrade'
 import { makeTradeDeribit } from '../actions/maketradeDeribit'
+import { getBalances } from '../bot'
 import { TelegramClient } from '../clients/telegramClient'
 import { TokenNames } from '../constants/token'
 import { GetMarketPrice, GetSpotPrice } from '../integrations/coingecko'
@@ -9,10 +11,12 @@ import { REPORT_ONLY } from '../secrets'
 import { ArbTelegram } from '../templates/arb'
 import { TradeTelegram } from '../templates/trade'
 import { ArbConfig, Strategy } from '../types/arbConfig'
-import { OptionType, ProviderType } from '../types/arbs'
+import { OptionType, ProviderType, Underlying } from '../types/arbs'
 import { Arb, ArbDto, DeribitTradeArgs, LyraTradeArgs } from '../types/lyra'
 import { TradeResult } from '../types/trade'
+import getLyra from '../utils/getLyra'
 import printObject from '../utils/printObject'
+import { Wallet } from '../wallets/wallet'
 
 export async function polling(config: ArbConfig) {
   const ms = config?.pollingInterval ? config?.pollingInterval * 60000 : 300000
@@ -88,34 +92,49 @@ export async function executeStrat(strategy: Strategy) {
 }
 
 export async function executeArb(arb: Arb, strategy: Strategy) {
-  const result1 = await tradeSide(arb, strategy, strategy.isBuyFirst, false)
+  const revertTrade = false
+  let positionId = 0
+  const isBuy = strategy.isBuyFirst
+  console.log('-----------------------------------------------')
+  console.log('First TradeLeg')
+  console.log('-----------------------------------------------')
+  const result1 = await tradeSide(arb, strategy, isBuy, revertTrade, positionId)
   if (!result1?.isSuccess) {
-    // don't do 2nd part of trade
-    // retry?
+    // don't do 2nd part of trade, retry?
     console.log('First side of trade failed.')
     return
   }
 
-  console.log('Reverting Result')
-  const revertResult = await tradeSide(arb, strategy, strategy.isBuyFirst, true)
+  console.log('-----------------------------------------------')
+  console.log('Second TradeLeg')
+  console.log('-----------------------------------------------')
+  const result2 = await tradeSide(arb, strategy, !isBuy, revertTrade, positionId)
+  if (!result2?.isSuccess) {
+    console.log('-----------------------------------------------')
+    console.log('Reverting FirstTrade')
+    console.log('-----------------------------------------------')
+    positionId = result1.lyraResult ? result1.lyraResult.positionId : 0
+    console.log(`PositionId: ${positionId}`)
+    const revertResult = await tradeSide(arb, strategy, isBuy, !revertTrade, positionId)
+    return
+  }
 
-  // const result2 = await trade(arb, strategy, !strategy.isBuyFirst, false)
-  // if (!result2?.isSuccess) {
-  //   // 2nd side of trade failed.
-  //   // revert the first side
-  //   // report it
-
-  //   return
-  // }
-
-  console.log('Arb Success')
+  console.log('ARB SUCCESS - BOTH TRADES EXECUTED')
   //todo: report success
 }
 
-export async function tradeSide(arb: Arb, strategy: Strategy, isBuy: boolean, revertTrade: boolean) {
-  const result = await trade(arb, strategy, isBuy, revertTrade)
+export async function tradeSide(
+  arb: Arb,
+  strategy: Strategy,
+  isBuy: boolean,
+  revertTrade: boolean,
+  positionId: number,
+) {
+  const result = await trade(arb, strategy, positionId, isBuy, revertTrade)
   if (!result?.isSuccess) {
     console.log(`${isBuy ? 'Buy' : 'Sell'} failed: ${result?.failReason}`)
+  } else {
+    console.log(`TRADE SIDE SUCCESS`)
   }
   return result
 }
@@ -137,16 +156,10 @@ export function filterArbs(arbDto: ArbDto, strategy: Strategy, spot: number) {
   return []
 }
 
-// return {
-//   isSuccess: false,
-//   pricePerOption: 0,
-//   failReason: '',
-//   provider: provider,
-// }
-
 export async function trade(
   arb: Arb,
   strategy: Strategy,
+  positionId: number,
   isBuy = true,
   revertTrade = false,
 ): Promise<TradeResult | undefined> {
@@ -154,7 +167,7 @@ export async function trade(
   const size = getSize(strategy)
 
   if (provider === ProviderType.LYRA) {
-    return await tradeLyra(arb, strategy, size, isBuy, revertTrade)
+    return await tradeLyra(arb, strategy, size, positionId, isBuy, revertTrade)
   } else {
     return await tradeDeribit(arb, strategy, size, isBuy, revertTrade)
   }
@@ -192,22 +205,72 @@ export async function reportTrade(
   await PostTelegram(TradeTelegram(arb, tradeResult, strategy, size, isBuy, revertTrade), TelegramClient)
 }
 
-export const tradeLyra = async (arb: Arb, strategy: Strategy, size: number, isBuy = true, revertTrade = false) => {
+export async function enoughColateralInWallet(
+  colatAmount: number,
+  optionType: OptionType,
+  market: Underlying,
+): Promise<boolean> {
+  // refresh balances
+  const lyra = getLyra()
+  const signer = new ethers.Wallet(Wallet().privateKey, lyra.provider)
+  await getBalances(lyra.provider, signer, false)
+  let currentBalance = 0
+
+  // assume covered call
+  // todo account for stable denominated call
+  if (optionType == OptionType.CALL) {
+    if (market == Underlying.ETH) {
+      // check sEth balance
+      currentBalance = global.BALANCES[TokenNames.sETH]
+    }
+    if (market == Underlying.BTC) {
+      currentBalance = global.BALANCES[TokenNames.sBTC]
+    }
+  } else {
+    // puts
+    currentBalance = global.BALANCES[TokenNames.sUSD]
+  }
+
+  return currentBalance >= colatAmount
+}
+
+export const tradeLyra = async (
+  arb: Arb,
+  strategy: Strategy,
+  size: number,
+  positionId: number,
+  isBuy = true,
+  revertTrade = false,
+) => {
+  const strike = isBuy ? (arb.buy.id as number) : (arb.sell.id as number)
+
   if (revertTrade) {
     isBuy = !isBuy
   }
 
   const colat = calcColateral(arb, strategy, size, isBuy)
 
+  // colat is 0 for buys, so not required to check wallet
+  if (colat > 0) {
+    // check wallet, can we cover colateral?
+    const enoughColat = await enoughColateralInWallet(colat, arb.type, strategy.market)
+
+    if (!enoughColat) {
+      const colateralResult = defaultResult(ProviderType.LYRA, 'Not enough funds in wallet to cover collateral.')
+      await reportTrade(arb, colateralResult, strategy, size, isBuy, revertTrade)
+      return colateralResult
+    }
+  }
+
   const tradeArgs: LyraTradeArgs = {
     size: size,
     market: strategy.market,
     call: arb.type == OptionType.CALL,
     buy: isBuy,
-    strike: isBuy ? (arb.buy.id as number) : (arb.sell.id as number),
+    strike: strike,
     collat: colat,
-    base: true,
     stable: TokenNames.sUSD,
+    positionId: positionId,
   }
 
   const result = await makeTradeLyra(tradeArgs)

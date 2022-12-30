@@ -34,7 +34,7 @@ export const makeTradeLyra = async (args: LyraTradeArgs): Promise<TradeResult> =
   const setToCollateral = args.collat ? toBigNumber(args.collat) : undefined
   const strikeId = args.strike
   const marketAddressOrName = args.market
-  const isBaseCollateral = args.base
+  const isBaseCollateral = isBuy ? true : isCall ? true : false // for buys not relevant / sells: calls (base or stable)  puts: stable (isbase = false)
   const owner = signer.address
   const market = await lyra.market(marketAddressOrName)
   const result = defaultResult(ProviderType.LYRA, '')
@@ -63,6 +63,7 @@ export const makeTradeLyra = async (args: LyraTradeArgs): Promise<TradeResult> =
   await approve(lyra, signer, market, market.quoteToken.address)
 
   // first stab
+
   let trade = await prepareTrade(
     lyra,
     owner,
@@ -74,6 +75,11 @@ export const makeTradeLyra = async (args: LyraTradeArgs): Promise<TradeResult> =
     isBaseCollateral,
     positionId,
   )
+
+  // Error prepping the trade
+  if (!trade) {
+    return result
+  }
 
   // trade is disabled
   if (trade.isDisabled) {
@@ -136,6 +142,9 @@ export const makeTradeLyra = async (args: LyraTradeArgs): Promise<TradeResult> =
   console.log('------------------ PREPARED TRADE END ------------------')
 
   // TODO trade preparation might still have failed. -> so return fail with fail reason
+  if (!trade) {
+    return result
+  }
 
   // Check if trade is disabled
   if (trade.disabledReason) {
@@ -167,7 +176,8 @@ export const makeTradeLyra = async (args: LyraTradeArgs): Promise<TradeResult> =
     }
   } catch (ex) {
     console.log(ex)
-    result.failReason = 'Fail Fail Fail'
+    result.isSuccess = false
+    result.failReason = 'Trade execution failed.'
   }
 
   return result
@@ -184,21 +194,38 @@ export const prepareTrade = async (
   isBaseCollateral: boolean,
   positionId: number,
 ) => {
-  if (positionId != 0) {
-    const position = await lyra.position(market.name, positionId)
-    const positionTrade = await position.trade(isBuy, size, SLIPPAGE, {
+  try {
+    if (positionId != 0) {
+      console.log(`Position Trade, position: ${positionId}`)
+      const position = await lyra.position(market.name, positionId)
+      console.log(`Position found`)
+      console.log(`--- Args: -----`)
+      console.log(`--- IsBuy: ${isBuy}-----`)
+      console.log(`--- Size: ${size} -----`)
+      console.log(`--- SetCollateralTo: ${setToCollateral} -----`)
+      console.log(`--- IsBaseCollateral: ${isBaseCollateral} -----`)
+
+      const positionTrade = await position.trade(isBuy, size, SLIPPAGE, {
+        setToCollateral,
+        isBaseCollateral,
+        premiumSlippage: SLIPPAGE,
+      })
+      return positionTrade
+    }
+  } catch (ex) {
+    console.log(ex)
+    return
+  }
+
+  try {
+    const trade = await Trade.get(lyra, owner, market.address, option.strike().id, option.isCall, isBuy, size, {
       setToCollateral,
       isBaseCollateral,
       premiumSlippage: SLIPPAGE,
     })
-    return positionTrade
+    return trade
+  } catch (ex) {
+    console.log(ex)
   }
-
-  const trade = await Trade.get(lyra, owner, market.address, option.strike().id, option.isCall, isBuy, size, {
-    setToCollateral,
-    isBaseCollateral,
-    premiumSlippage: SLIPPAGE,
-  })
-
-  return trade
+  return
 }

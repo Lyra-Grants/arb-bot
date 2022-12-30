@@ -29,8 +29,7 @@ export async function goBot() {
     await Promise.all([getBalances(lyra.provider, signer, true)])
   }
 
-  // test trade reverts
-  //await testRevertTradeLyra()
+  // await testRevertTradeLyra()
   // await testRevertTradeDeribit()
 
   await polling(config)

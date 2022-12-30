@@ -26,7 +26,6 @@ export type LyraTradeArgs = {
   buy: boolean
   strike: number
   collat: number
-  base: boolean
   stable: string
   positionId: number
 }
