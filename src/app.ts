@@ -17,7 +17,7 @@ async function Initialize(): Promise<void> {
 }
 
 async function Notifier(isDown = true) {
-  await PostTelegram(`Arb Bot ${isDown ? 'Down' : 'Up'}\n`, new Telegraf(TELEGRAM_ACCESS_TOKEN))
+  // await PostTelegram(`Arb Bot ${isDown ? 'Down' : 'Up'}\n`, new Telegraf(TELEGRAM_ACCESS_TOKEN))
 }
 
 function RegisterShutdownEvents(): void {
