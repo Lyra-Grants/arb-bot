@@ -1,4 +1,4 @@
-# Lyra Arb Bot \_/ 🤖
+# Lyra / Deribit Arb Bot \_/ 🤖
 
 A bot providing automated arbs between Lyra & Deribit.
 Atm the moment you must run this bot yourself for reporting & execution.
