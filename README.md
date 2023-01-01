@@ -14,8 +14,8 @@ Atm the moment you must run this bot yourself for reporting & execution.
 - [x] Market Order Trade Execution
 - [x] Execute trade - Lyra
 - [x] Execute trade - Deribit
-- [ ] Revert mechanism (price moves, arb invalidated)
-- [ ] Trade / logging - reporting via Telegram
+- [x] Revert mechanism (price moves, arb invalidated)
+- [x] Trade / logging - reporting via Telegram
 - [x] Polling mechanism - js call
 - [ ] Documentation
 
