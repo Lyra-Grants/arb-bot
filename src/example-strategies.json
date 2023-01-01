@@ -16,7 +16,7 @@
     },
     {
       "market": "BTC",
-      "optionTypes": ["CALL"],
+      "optionTypes": ["CALL", "PUT"],
       "profitThreshold": 3,
       "minAPY": 30,
       "sellLyraOnly": true,
