@@ -3,13 +3,13 @@
   "strategy": [
     {
       "market": "ETH",
-      "optionTypes": ["CALL", "PUT"],
-      "profitThreshold": 0,
-      "minAPY": 0,
+      "optionTypes": ["CALL"],
+      "profitThreshold": 3,
+      "minAPY": 20,
       "sellLyraOnly": true,
-      "spotStrikeDiff": 0,
+      "spotStrikeDiff": 100,
       "maxCollat": 1,
-      "tradeSize": 0.01,
+      "tradeSize": 1,
       "colatPercent": 80,
       "isBuyFirst": false,
       "mostProfitableOnly": true
