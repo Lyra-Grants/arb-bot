@@ -20,7 +20,7 @@
       "profitThreshold": 3,
       "minAPY": 20,
       "sellLyraOnly": true,
-      "spotStrikeDiff": 1000,
+      "spotStrikeDiff": 500,
       "maxCollat": 1,
       "tradeSize": 1,
       "colatPercent": 80,
