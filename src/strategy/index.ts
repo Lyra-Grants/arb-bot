@@ -71,10 +71,6 @@ export async function executeStrat(strategy: Strategy) {
   }
 
   if (REPORT_ONLY) {
-    // REPORT
-    // console.log('----')
-    // console.log(arbDto.arbs)
-    // console.log('----')
     await PostTelegram(ArbTelegram(arbDto, strategy, spot, false), TelegramClient)
   } else {
     // EXECUTE
@@ -88,6 +84,8 @@ export async function executeStrat(strategy: Strategy) {
         await executeArb(arb, strategy)
       })
     }
+    // shut down after execution
+    process.exit()
   }
 }
 
@@ -101,7 +99,7 @@ export async function executeArb(arb: Arb, strategy: Strategy) {
   const result1 = await tradeSide(arb, strategy, isBuy, revertTrade, positionId)
   if (!result1?.isSuccess) {
     // don't do 2nd part of trade, retry?
-    console.log('First side of trade failed.')
+    console.log('ARB FAIL - 1st Leg Failed.')
     return
   }
 
@@ -115,7 +113,9 @@ export async function executeArb(arb: Arb, strategy: Strategy) {
     console.log('-----------------------------------------------')
     positionId = result1.lyraResult ? result1.lyraResult.positionId : 0
     console.log(`PositionId: ${positionId}`)
-    const revertResult = await tradeSide(arb, strategy, isBuy, !revertTrade, positionId)
+    // revert 1st leg
+    await tradeSide(arb, strategy, isBuy, !revertTrade, positionId)
+    console.log('ARB FAIL - 2nd Leg Failed.')
     return
   }
 
