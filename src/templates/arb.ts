@@ -22,7 +22,6 @@ export function ArbTelegram(dto: ArbDto, strategy: Strategy, spot: number, first
 
   if (!REPORT_ONLY) {
     post.push(`<strong>Execution Settings</strong>:\n`)
-    post.push(`💰 <i>Max Colat:</i> <strong>${strategy.maxCollat}</strong>\n`)
     post.push(`🧮 <i>Trade Size:</i> <strong>${strategy.tradeSize}</strong>\n`)
     post.push(`🫙 <i>Lyra Colat Perc:</i> <strong>${strategy.colatPercent}%</strong>\n`)
     post.push(`🏷️ <i>Buy First?:</i> <strong>${strategy.isBuyFirst}</strong>\n`)

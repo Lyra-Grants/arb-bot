@@ -59,7 +59,6 @@ const arb: Arb = {
 const strategy: Strategy = {
   market: Underlying.ETH,
   optionTypes: [OptionType.CALL],
-  maxCollat: 1,
   tradeSize: 1,
   colatPercent: 100,
   isBuyFirst: false,

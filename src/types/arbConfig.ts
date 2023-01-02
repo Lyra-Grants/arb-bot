@@ -8,7 +8,6 @@ export type ArbConfig = {
 export type Strategy = {
   market: Underlying
   optionTypes: OptionType[]
-  maxCollat: number
   tradeSize: number
   colatPercent: number
   isBuyFirst: boolean
