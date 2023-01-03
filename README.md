@@ -33,7 +33,6 @@ Atm the moment you must run this bot yourself for reporting & execution.
 
 #### Arb Execution Settings
 
-- [x] Max Colat
 - [x] Trade Size
 - [x] Colat Percent
 - [x] Buy First
