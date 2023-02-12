@@ -2,15 +2,13 @@ import { BigNumber, Contract } from 'ethers'
 import { useExpirations, useStrikes } from '../../utils/arbUtils'
 import { fixedFromFloat, fixedToNumber } from '../../utils/fixedMath'
 import premiaPoolAbi from './premiaPoolAbi.json'
-import { arbitrumInfuraProvider } from '../../clients/ethersClient'
 import { OptionsMap, OptionType, ProviderType } from '../../types/arbs'
 import printObject from '../../utils/printObject'
+import getLyra from 'src/utils/getLyra'
 
-const ethPoolContract = new Contract(
-  '0xE5DbC4EDf467B609A063c7ea7fAb976C6b9BAa1a',
-  premiaPoolAbi,
-  arbitrumInfuraProvider,
-)
+// todo hook this up to infura
+const provider = getLyra().provider
+const ethPoolContract = new Contract('0xE5DbC4EDf467B609A063c7ea7fAb976C6b9BAa1a', premiaPoolAbi, provider)
 
 const convertPrice = ([price, fee]: [price: BigNumber, fee: BigNumber]) => fixedToNumber(price) + fixedToNumber(fee)
 

@@ -5,3 +5,4 @@ dev.env
 yarn-error.log
 launch.json
 dist/
+build/

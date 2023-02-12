@@ -4,15 +4,18 @@
   "description": "Lyra Arb Bot",
   "license": "MIT",
   "engines": {
-    "node": "16.x",
+    "node": "18.x",
     "yarn": "1.x"
   },
   "scripts": {
-    "start:lyrabot": "ts-node-dev --files --respawn src/app.ts",
-    "start": "ts-node --transpile-only src/app.ts --env prod",
-    "lint:ts": "eslint --ext .js,.ts .",
+    "dev": "ts-node-dev --files --respawn src/app.ts",
+    "clean": "rimraf ./build",
+    "build": "yarn clean && npx tsc",
+    "start": "node build/app.js",
+    "lint:ts": "eslint --,ext .js,.ts .",
     "lint:ts:fix": "yarn lint:ts --fix",
-    "format": "prettier --write \"**/*.+(js|ts|json)\""
+    "format": "prettier --write \"**/*.+(js|ts|json)\"",
+    "check": "npx tsc --noEmit"
   },
   "dependencies": {
     "@ethersproject/bignumber": "^5.7.0",
@@ -27,9 +30,11 @@
     "moment": "^2.29.4",
     "node-schedule": "^2.1.0",
     "react": "^18.2.0",
+    "rimraf": "^4.1.2",
     "rpc-websocket-client": "^1.1.4",
     "telegraf": "^4.10.0",
-    "ts-node": "^10.9.1"
+    "ts-node": "^10.9.1",
+    "tsc": "^2.0.4"
   },
   "devDependencies": {
     "@types/coingecko-api": "^1.0.10",

@@ -1,25 +1,6 @@
-import { CoinGeckoClient } from '../clients/coinGeckoClient'
 import { Underlying } from '../types/arbs'
 import fromBigNumber from '../utils/fromBigNumber'
 import getLyra from '../utils/getLyra'
-
-export async function GetPrice(): Promise<void> {
-  try {
-    await CoinGeckoClient.simple
-      .price({
-        ids: ['ethereum', 'bitcoin'],
-        vs_currencies: 'usd',
-        include_24hr_change: true,
-      })
-      .then((resp) => {
-        //printObject(resp.data)
-        global.ETH_PRICE = resp.data['ethereum'].usd
-        global.BTC_PRICE = resp.data['bitcoin'].usd
-      })
-  } catch (error) {
-    console.log(error)
-  }
-}
 
 export function GetMarketPrice(market: Underlying) {
   if (market == Underlying.BTC) {
