@@ -1,0 +1,8 @@
+node_modules
+.env
+prod.env
+dev.env
+yarn-error.log
+launch.json
+dist/
+build/

@@ -1,55 +1,13 @@
 {
-  "name": "arb-bot",
-  "version": "1.1.0",
-  "description": "Lyra Arb Bot",
-  "license": "MIT",
-  "engines": {
-    "node": "18.x",
-    "yarn": "1.x"
-  },
+  "name": "@lyra-grants/arb-bot",
+  "version": "1.0.0",
+  "private": true,
   "scripts": {
-    "dev": "ts-node-dev --files --respawn src/app.ts",
-    "clean": "rimraf ./build",
-    "build": "yarn clean && npx tsc",
-    "start": "node build/app.js",
-    "lint:ts": "eslint --,ext .js,.ts .",
-    "lint:ts:fix": "yarn lint:ts --fix",
-    "format": "prettier --write \"**/*.+(js|ts|json)\"",
-    "check": "npx tsc --noEmit"
+    "build": "yarn workspace @lyrafinance/lyra-js build && yarn workspace @lyra-grants/arb-bot build",
+    "start": "yarn workspace @lyra-grants/arb-bot start"
   },
-  "dependencies": {
-    "@ethersproject/bignumber": "^5.7.0",
-    "@ethersproject/providers": "^5.7.2",
-    "@ethersproject/units": "^5.7.0",
-    "@lyrafinance/lyra-js": "^0.0.22",
-    "coingecko-api": "^1.0.10",
-    "dayjs": "^1.11.6",
-    "dotenv": "^16.0.3",
-    "ethers": "^5.7.2",
-    "lodash": "^4.17.21",
-    "moment": "^2.29.4",
-    "node-schedule": "^2.1.0",
-    "react": "^18.2.0",
-    "rimraf": "^4.1.2",
-    "rpc-websocket-client": "^1.1.4",
-    "telegraf": "^4.10.0",
-    "ts-node": "^10.9.1",
-    "tsc": "^2.0.4"
-  },
-  "devDependencies": {
-    "@types/coingecko-api": "^1.0.10",
-    "@types/lodash": "^4.14.188",
-    "@types/node": "^18.11.9",
-    "@types/node-schedule": "^2.1.0",
-    "@typescript-eslint/eslint-plugin": "^5.42.1",
-    "@typescript-eslint/parser": "^5.42.1",
-    "eslint": "^8.27.0",
-    "eslint-config-prettier": "^8.5.0",
-    "eslint-plugin-prettier": "^4.2.1",
-    "nodemon": "^2.0.20",
-    "prettier": "^2.7.1",
-    "ts-node-dev": "^2.0.0",
-    "typescript": "^4.8.4",
-    "yarn-upgrade-all": "^0.7.1"
-  }
+  "workspaces": [
+    "app",
+    "sdk"
+  ]
 }
