@@ -1,3 +1,4 @@
+import { Network } from '@lyrafinance/lyra-js'
 import { OptionType, Underlying } from './arbs'
 
 export type ArbConfig = {
@@ -6,6 +7,7 @@ export type ArbConfig = {
 }
 
 export type Strategy = {
+  networks: Network[]
   market: Underlying
   optionTypes: OptionType[]
   tradeSize: number

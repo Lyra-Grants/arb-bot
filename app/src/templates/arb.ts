@@ -4,8 +4,10 @@ import { BuySellSymbol, FN, FormattedDateShort, YesNoSymbol } from './common'
 import { StatSymbol } from './common'
 import { Strategy } from '../types/arbConfig'
 import { REPORT_ONLY } from '../secrets'
+import { Network } from '@lyrafinance/lyra-js'
+import { titleCaseWord } from '../utils/utils'
 
-export function ArbTelegram(dto: ArbDto, strategy: Strategy, spot: number, firstRun: boolean) {
+export function ArbTelegram(dto: ArbDto, strategy: Strategy, spot: number, network: Network, firstRun: boolean) {
   const post: string[] = []
   if (firstRun) {
     post.push(`<strong>📍 Polling for Arbs!</strong>\n\n`)
@@ -14,6 +16,7 @@ export function ArbTelegram(dto: ArbDto, strategy: Strategy, spot: number, first
 
   post.push(`${StatSymbol(dto.market)} <i>Market:</i> <strong>${dto.market.toUpperCase()}</strong>\n`)
   post.push(`🏦 <i>Provider:</i> <strong>Lyra | Deribit</strong>\n`)
+  post.push(`⛓️ <i>Network:</i> <strong>${titleCaseWord(network)}</strong>\n`)
   post.push(`📈 <i>Option Types:</i> <strong>${strategy.optionTypes.join(', ')}</strong>\n`)
   post.push(`💵 <i>Profit Threshold:</i> <strong>$${strategy.profitThreshold}</strong>\n`)
   post.push(`☄️ <i>Min APY:</i> <strong>${strategy.minAPY}%</strong>\n`)

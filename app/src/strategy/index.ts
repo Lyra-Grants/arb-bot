@@ -19,17 +19,17 @@ import getLyraSDK from '../utils/getLyraSDK'
 import printObject from '../utils/printObject'
 import { Wallet } from '../wallets/wallet'
 
-export async function polling(config: ArbConfig) {
+export async function polling(config: ArbConfig, network: Network) {
   const ms = config?.pollingInterval ? config?.pollingInterval * 60000 : 300000
   console.debug(`Polling every ${ms / 60000} mins`)
 
   //
   const poll = async () => {
     try {
-      await GetSpotPrice(Network.Optimism)
+      await GetSpotPrice(network)
       await Promise.all([
         config.strategy.map(async (strat) => {
-          executeStrat(strat, Network.Optimism)
+          executeStrat(strat, network)
         }),
       ])
     } catch (e) {
@@ -50,10 +50,14 @@ export async function reportStrat(strategy: Strategy, network: Network) {
 
   const spot = GetMarketPrice(arbDto.market, network)
 
-  await PostTelegram(ArbTelegram(arbDto, strategy, spot, true), TelegramClient)
+  await PostTelegram(ArbTelegram(arbDto, strategy, spot, network, true), TelegramClient)
 }
 
 export async function executeStrat(strategy: Strategy, network: Network) {
+  if (strategy.market == Underlying.BTC && network == Network.Arbitrum) {
+    console.log('Currently no BTC market on Arbitrum.')
+    return
+  }
   const arbDto = await GetArbitrageDeals(strategy, network)
   const spot = GetMarketPrice(arbDto.market, network)
   arbDto.arbs = filterArbs(arbDto, strategy, spot) ?? []
@@ -64,7 +68,7 @@ export async function executeStrat(strategy: Strategy, network: Network) {
   }
 
   if (REPORT_ONLY) {
-    await PostTelegram(ArbTelegram(arbDto, strategy, spot, false), TelegramClient)
+    await PostTelegram(ArbTelegram(arbDto, strategy, spot, network, false), TelegramClient)
   } else {
     // EXECUTE
     // only execute top 1 arb

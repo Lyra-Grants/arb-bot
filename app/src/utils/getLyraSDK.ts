@@ -1,5 +1,4 @@
 import { Network } from '@lyrafinance/lyra-js'
-
 import { lyraArbitrum, lyraOptimism } from './lyra'
 
 const getLyraSDK = (network: Network) => {

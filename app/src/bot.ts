@@ -14,7 +14,9 @@ import { testRevertTradeDeribit, testRevertTradeLyra } from './test-trade'
 import { Provider } from '@ethersproject/providers'
 import { Network } from '@lyrafinance/lyra-js'
 
-export async function goBot() {
+const networks = [Network.Arbitrum, Network.Optimism]
+
+export async function Run() {
   const lyra = getLyraSDK(Network.Optimism)
   global.BALANCES = {}
 
@@ -33,7 +35,9 @@ export async function goBot() {
   // await testRevertTradeLyra()
   // await testRevertTradeDeribit()
 
-  await polling(config)
+  networks.map(async (network) => {
+    await polling(config, network)
+  })
 }
 
 export const getBalances = async (provider: Provider, signer: ethers.Wallet, postTelegram: boolean) => {

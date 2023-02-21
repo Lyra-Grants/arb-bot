@@ -12,9 +12,9 @@ export function GetPrice(market: Underlying, network: Network) {
     if (market == Underlying.ETH) {
       return ETH_PRICE_ARB
     }
-    if (market == Underlying.BTC) {
-      return BTC_PRICE_ARB
-    }
+    // if (market == Underlying.BTC) {
+    //   return BTC_PRICE_ARB
+    // }
   }
 
   if (network === Network.Optimism) {
