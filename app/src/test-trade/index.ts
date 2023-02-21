@@ -68,6 +68,7 @@ const strategy: Strategy = {
   sellLyraOnly: false,
   spotStrikeDiff: 0,
   mostProfitableOnly: true,
+  networks: [Network.Optimism],
 }
 
 export async function testRevertTradeLyra() {
