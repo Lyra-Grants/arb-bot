@@ -1,0 +1,18 @@
+{
+  "pollingInterval": 5,
+  "strategy": [
+    {
+      "networks": ["arbitrum", "optimism"],
+      "market": "ETH",
+      "optionTypes": ["CALL", "PUT"],
+      "profitThreshold": 2,
+      "minAPY": 15,
+      "sellLyraOnly": false,
+      "spotStrikeDiff": 50,
+      "tradeSize": 1,
+      "colatPercent": 80,
+      "isBuyFirst": false,
+      "mostProfitableOnly": true
+    }
+  ]
+}

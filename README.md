@@ -4,6 +4,7 @@ A bot providing automated arbs between Lyra & Deribit.
 Atm the moment you must run this bot yourself for reporting & execution.
 
 ![Example arb - Deribit / Lyra](https://raw.githubusercontent.com/Lyra-Grants/assets/main/example_arb.png)
+
 #### Arb Identification
 
 - [x] Identify Arbs
