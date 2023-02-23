@@ -4,7 +4,7 @@
     {
       "networks": ["arbitrum", "optimism"],
       "market": "ETH",
-      "optionTypes": ["CALL", "PUT"],
+      "optionTypes": ["CALL"],
       "profitThreshold": 2,
       "minAPY": 15,
       "sellLyraOnly": false,
