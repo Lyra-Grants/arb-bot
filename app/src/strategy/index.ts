@@ -23,7 +23,12 @@ export async function polling(config: ArbConfig, network: Network) {
   const ms = config?.pollingInterval ? config?.pollingInterval * 60000 : 300000
   console.debug(`Polling every ${ms / 60000} mins`)
 
-  //
+  // await Promise.all([
+  //   config.strategy.map(async (strat) => {
+  //     reportStrat(strat, network)
+  //   }),
+  // ])
+
   const poll = async () => {
     try {
       await GetSpotPrice(network)

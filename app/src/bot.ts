@@ -10,14 +10,14 @@ import { REPORT_ONLY } from './secrets'
 import { BalancesTelegram } from './templates/balances'
 import { TelegramClient } from './clients/telegramClient'
 import { PostTelegram } from './integrations/telegram'
-import { testRevertTradeDeribit, testRevertTradeLyra } from './test-trade'
 import { Provider } from '@ethersproject/providers'
 import { Network } from '@lyrafinance/lyra-js'
+import { ArbitrageJob } from './schedule'
+import { GetSpotPrice } from './utils/getPrice'
 
 const networks = [Network.Arbitrum, Network.Optimism]
 
 export async function Run() {
-  const lyra = getLyraSDK(Network.Optimism)
   global.BALANCES = {}
 
   // read strats
@@ -28,6 +28,7 @@ export async function Run() {
 
   // get wallet balances / prices
   if (!REPORT_ONLY) {
+    const lyra = getLyraSDK(Network.Optimism)
     const signer = new ethers.Wallet(Wallet().privateKey, lyra.provider)
     await Promise.all([getBalances(lyra.provider, signer, true)])
   }
@@ -36,6 +37,8 @@ export async function Run() {
   // await testRevertTradeDeribit()
 
   networks.map(async (network) => {
+    await GetSpotPrice(network)
+    ArbitrageJob(config, network)
     await polling(config, network)
   })
 }

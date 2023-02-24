@@ -21,6 +21,11 @@ export const DERIBIT_TESTNET: boolean = _.defaultTo(
   true,
 ) as boolean
 
+export const TWITTER_ENABLED: boolean = _.defaultTo(
+  convertToBoolean(process.env.TWITTER_ENABLED as string),
+  false,
+) as boolean
+
 export const DERIBIT_CLIENT_ID = _.defaultTo(process.env.DERIBIT_CLIENT_ID, '')
 export const DERIBIT_CLIENT_SECRET = _.defaultTo(process.env.DERIBIT_CLIENT_SECRET, '')
 export const DERIBIT_TESTNET_CLIENT_ID = _.defaultTo(process.env.DERIBIT_TESTNET_CLIENT_ID, '')
@@ -29,3 +34,8 @@ export const DERIBIT_TESTNET_CLIENT_SECRET = _.defaultTo(process.env.DERIBIT_TES
 //TELEGRAM ADDRESS TO REPORT TO
 export const TELEGRAM_ACCESS_TOKEN = _.defaultTo(process.env.TELEGRAM_ACCESS_TOKEN, '')
 export const TELEGRAM_CHANNEL = _.defaultTo(process.env.TELEGRAM_CHANNEL, '')
+
+export const TWITTER_APP_KEY = _.defaultTo(process.env.TWITTER_APP_KEY, '')
+export const TWITTER_APP_SECRET = _.defaultTo(process.env.TWITTER_APP_SECRET, '')
+export const TWITTER_ACCESS_TOKEN = _.defaultTo(process.env.TWITTER_ACCESS_TOKEN, '')
+export const TWITTER_ACCESS_SECRET = _.defaultTo(process.env.TWITTER_ACCESS_SECRET, '')

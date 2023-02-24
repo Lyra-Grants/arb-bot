@@ -1,11 +1,13 @@
 import { ArbDto } from '../types/lyra'
 import { ProviderType } from '../types/arbs'
-import { BuySellSymbol, FN, FormattedDateShort, YesNoSymbol } from './common'
+import { BuySellSymbol, FN, FormattedDateShort, LyraDappUrl, YesNoSymbol } from './common'
 import { StatSymbol } from './common'
 import { Strategy } from '../types/arbConfig'
 import { REPORT_ONLY } from '../secrets'
 import { Network } from '@lyrafinance/lyra-js'
 import { titleCaseWord } from '../utils/utils'
+
+const deribitUrl = 'https://www.deribit.com/?reg=17349.7477'
 
 export function ArbTelegram(dto: ArbDto, strategy: Strategy, spot: number, network: Network, firstRun: boolean) {
   const post: string[] = []
@@ -58,5 +60,32 @@ export function ArbTelegram(dto: ArbDto, strategy: Strategy, spot: number, netwo
     }
   }
 
+  return post.join('')
+}
+
+export function ArbTwitter(dto: ArbDto, network: Network) {
+  if (dto.arbs.length == 0) {
+    return ''
+  }
+
+  const post: string[] = []
+  post.push(`$${dto.market.toUpperCase()} Arbs Deribit | Lyra ${titleCaseWord(network)}\n\n`)
+  dto.arbs.slice(0, 2).map((arb) => {
+    post.push(`$${FN(arb.strike, 0)} ${FormattedDateShort(new Date(arb.expiration))} ${arb.type}\n`)
+    post.push(
+      `🔹 Buy $${FN(arb.buy.askPrice as number, 2)} ${
+        arb.buy.provider === ProviderType.DERIBIT ? 'DB' : `LY`
+      }\n🔸 Sell $${FN(arb.sell.bidPrice as number, 2)} ${
+        arb.sell.provider === ProviderType.DERIBIT ? 'DB' : `LY`
+      }\nAPY: ${FN(arb.apy, 2)}%\n\n`,
+    )
+  })
+  if (Math.random() > 1) {
+    post.push(`10% trading discount👇\n`)
+    post.push(`${deribitUrl}\n`)
+  } else {
+    post.push(`Trade on Lyra👇\n`)
+    post.push(`${LyraDappUrl()}\n`)
+  }
   return post.join('')
 }
