@@ -4,7 +4,7 @@ import {
   ALCHEMY_PROJECT_ID_ARBITRUM_TESTNET,
   ALCHEMY_PROJECT_ID_OPTIMISM,
   ALCHEMY_PROJECT_ID_OPTIMISM_TESTNET,
-} from '../secrets'
+} from '../config'
 
 export enum WalletType {
   MetaMask = 'MetaMask',

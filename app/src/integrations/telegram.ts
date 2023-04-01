@@ -1,8 +1,12 @@
-import { TELEGRAM_CHANNEL, TESTNET } from '../secrets'
+import { TELEGRAM_CHANNEL, TESTNET } from '../config'
 import { Context, Telegraf } from 'telegraf'
 import { Update } from 'telegraf/typings/core/types/typegram'
 
-export async function PostTelegram(post: string, telegramClient: Telegraf<Context<Update>>) {
+export async function PostTelegram(
+  post: string,
+  telegramClient: Telegraf<Context<Update>>,
+  channel: string = TELEGRAM_CHANNEL,
+) {
   if (TESTNET) {
     console.log(post)
   } else {

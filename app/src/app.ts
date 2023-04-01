@@ -1,28 +1,35 @@
 import { Telegraf } from 'telegraf'
 import { Run } from './bot'
 import { PostTelegram } from './integrations/telegram'
-import { TELEGRAM_ACCESS_TOKEN, TESTNET } from './secrets'
+import { LOG_CHANNEL, LOG_TOKEN } from './config'
 
 async function Initialize(): Promise<void> {
   try {
-    if (!TESTNET) {
-      RegisterShutdownEvents()
-      await Notifier(false)
-    }
-
+    RegisterShutdownEvents()
+    await Notifier('Initialize', false)
     await Run()
   } catch (error) {
     console.error(error)
+    await Notifier('Initialize')
+    throw error // do this to restart the app!
   }
 }
 
-async function Notifier(isDown = true) {
-  // await PostTelegram(`Arb Bot ${isDown ? 'Down' : 'Up'}\n`, new Telegraf(TELEGRAM_ACCESS_TOKEN))
+async function Notifier(message: string, isDown = true) {
+  await PostTelegram(`🫘 Arb Bot (LYRA) ${isDown ? 'Down' : 'Up'} (${message}) \n`, new Telegraf(LOG_TOKEN), LOG_CHANNEL)
 }
 
 function RegisterShutdownEvents(): void {
+  process.on('uncaughtException', async (error) => {
+    console.error('Uncaught exception! Shutting down.')
+    await Notifier('Uncaught Exception')
+    await PostTelegram(`Error:\n\n ${error.message}`, new Telegraf(LOG_TOKEN), LOG_CHANNEL)
+    console.error(error)
+  })
+
   process.on('beforeExit', async (code) => {
-    await Notifier().then(process.exit(code))
+    console.log('before exit.')
+    await Notifier('Before Exit').then(process.exit(code))
   })
 }
 

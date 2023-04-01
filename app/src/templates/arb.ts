@@ -3,7 +3,7 @@ import { ProviderType } from '../types/arbs'
 import { BuySellSymbol, FN, FormattedDateShort, LyraDappUrl, YesNoSymbol } from './common'
 import { StatSymbol } from './common'
 import { Strategy } from '../types/arbConfig'
-import { REPORT_ONLY } from '../secrets'
+import { REPORT_ONLY } from '../config'
 import { Network } from '@lyrafinance/lyra-js'
 import { titleCaseWord } from '../utils/utils'
 

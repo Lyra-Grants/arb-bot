@@ -1,5 +1,5 @@
 import { JsonRpcProvider } from '@ethersproject/providers'
-import { ALCHEMY_PROJECT_ID_MAINNET } from '../secrets'
+import { ALCHEMY_PROJECT_ID_MAINNET } from '../config'
 import CachedStaticJsonRpcProvider from './CachedStaticJsonRpcProvider'
 
 export const MAINNET_NETWORK_CONFIG = {

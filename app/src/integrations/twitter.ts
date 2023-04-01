@@ -1,4 +1,4 @@
-import { TESTNET, TWITTER_ENABLED } from '../secrets'
+import { TESTNET, TWITTER_ENABLED } from '../config'
 import getTwitter from '../utils/getTwitter'
 
 export async function SendTweet(tweet: string) {

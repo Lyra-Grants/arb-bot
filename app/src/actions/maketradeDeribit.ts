@@ -6,7 +6,7 @@ import {
   DERIBIT_TESTNET,
   DERIBIT_TESTNET_CLIENT_ID,
   DERIBIT_TESTNET_CLIENT_SECRET,
-} from '../secrets'
+} from '../config'
 import { ProviderType } from '../types/arbs'
 import { DeribitError, DeribitResult, DeribitTradeArgs, DeribitTradeResult } from '../types/lyra'
 import { TradeResult } from '../types/trade'

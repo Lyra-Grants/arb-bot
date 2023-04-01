@@ -4,7 +4,7 @@ import { Instrument, OptionsMap, OptionType, ProviderType, Underlying } from '..
 import { RpcWebSocketClient } from 'rpc-websocket-client'
 import { GetPrice } from '../../lyra/arbitrage'
 import { deribitUrl, deribitUrlTestnet } from '../../constants/api'
-import { DERIBIT_TESTNET } from '../../secrets'
+import { DERIBIT_TESTNET } from '../../config'
 import { Network } from '@lyrafinance/lyra-js'
 
 // const authRequest = {

@@ -12,6 +12,9 @@ export const ALCHEMY_PROJECT_ID_OPTIMISM_TESTNET = _.defaultTo(process.env.ALCHE
 export const ALCHEMY_PROJECT_ID_ARBITRUM_TESTNET = _.defaultTo(process.env.ALCHEMY_PROJECT_ID_ARBITRUM_TESTNET, '')
 export const ALCHEMY_PROJECT_ID_MAINNET = _.defaultTo(process.env.ALCHEMY_PROJECT_ID_MAINNET, '')
 
+export const LOG_TOKEN = _.defaultTo(process.env.LOG_TOKEN, '')
+export const LOG_CHANNEL = _.defaultTo(process.env.LOG_CHANNEL, '')
+
 export const WALLET_ADDRESS = _.defaultTo(process.env.WALLET_ADDRESS, '')
 export const PRIVATE_KEY = _.defaultTo(process.env.PRIVATE_KEY, '')
 export const PUBLIC_KEY = _.defaultTo(process.env.PUBLIC_KEY, '')

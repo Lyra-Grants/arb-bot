@@ -1,0 +1,35 @@
+name: Node.js CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  build:
+    runs-on: self-hosted
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v2
+
+      - name: Setup Node
+        uses: actions/setup-node@v1
+        with:
+          node-version: ${{matrix.node-version}}
+          cache: 'yarn'
+
+      - name: Setup Environment Variables
+        run: echo '${{ secrets.ENV_FILE }}' > .env
+
+      - name: Install & Build
+        run: |
+          yarn install
+          yarn build
+
+      - name: Stop & Start
+        run: |
+          pm2 stop "lyra-arbs"
+          pm2 start "lyra-arbs"
+          pm2 save

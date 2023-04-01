@@ -71,10 +71,10 @@ export async function useDeals(strategy: Strategy, network: Network) {
         : interception
       if (providerFiltered?.length < 2) return
 
-      const maxCall = maxBy(providerFiltered, 'CALL.bidPrice')?.CALL
-      const minCall = minBy(providerFiltered, 'CALL.askPrice')?.CALL
-      const maxPut = maxBy(providerFiltered, 'PUT.bidPrice')?.PUT
-      const minPut = minBy(providerFiltered, 'PUT.askPrice')?.PUT
+      const maxCall = maxBy(providerFiltered, (o) => o[OptionType.CALL]?.bidPrice)?.CALL
+      const minCall = minBy(providerFiltered, (o) => o[OptionType.CALL]?.askPrice)?.CALL
+      const maxPut = maxBy(providerFiltered, (o) => o[OptionType.PUT]?.bidPrice)?.PUT
+      const minPut = minBy(providerFiltered, (o) => o[OptionType.PUT]?.askPrice)?.PUT
 
       const callDeal =
         maxCall?.bidPrice &&
